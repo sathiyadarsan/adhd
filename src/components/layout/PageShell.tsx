@@ -64,11 +64,11 @@ export function PageShell() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-slate-950 text-slate-100 overflow-hidden font-sans">
+    <div className="flex h-screen w-full bg-brand-bg text-white overflow-hidden font-sans">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 border-r border-slate-800 bg-slate-900 shadow-xl">
+      <aside className="hidden md:flex flex-col w-64 border-r border-brand-secondary bg-brand-card shadow-xl">
         <div className="p-6">
-          <h1 className="text-2xl font-serif font-bold text-amber-500 tracking-tight">Productivity</h1>
+          <h1 className="text-2xl font-serif font-bold text-brand-accent tracking-tight">Productivity</h1>
         </div>
         <nav className="flex-1 px-4 space-y-2 mt-2">
           {navItems.map((item) => {
@@ -79,8 +79,8 @@ export function PageShell() {
                 onClick={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: item.id })}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all border-l-4 ${
                   isActive
-                    ? 'bg-amber-500/10 text-amber-500 border-amber-500 font-medium'
-                    : 'border-transparent text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                    ? 'bg-brand-accent/10 text-brand-accent border-brand-accent font-medium'
+                    : 'border-transparent text-white/60 hover:bg-brand-secondary hover:text-white/90'
                 }`}
               >
                 <item.icon className="w-5 h-5" />
@@ -94,10 +94,10 @@ export function PageShell() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         {/* Top Header / Global Search */}
-        <header className="h-20 flex items-center justify-center px-4 md:px-8 border-b border-slate-800/50 relative shrink-0">
+        <header className="h-20 flex items-center justify-center px-4 md:px-8 border-b border-brand-secondary/50 relative shrink-0">
           <div className="w-full max-w-2xl relative" ref={dropdownRef}>
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/60" />
               <input
                 type="text"
                 value={searchQuery}
@@ -107,24 +107,24 @@ export function PageShell() {
                 }}
                 onFocus={() => setIsDropdownOpen(true)}
                 placeholder="Search tasks, habits, or ask AI..."
-                className="w-full bg-slate-800 text-slate-100 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-2 focus:ring-amber-500 transition-all placeholder:text-slate-400 border border-slate-700 shadow-sm"
+                className="w-full bg-brand-secondary text-white rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-2 focus:ring-brand-accent transition-all placeholder:text-white/60 border border-brand-secondary/50 shadow-sm"
               />
             </div>
 
             {/* Dropdown Results */}
             {showResults && (
-              <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden z-50">
+              <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-brand-card border border-brand-secondary/50 rounded-2xl shadow-2xl overflow-hidden z-50">
                 <div className="p-2 space-y-2 max-h-96 overflow-y-auto">
                   {matchedTasks.length > 0 && (
                     <div>
-                      <div className="px-3 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Tasks</div>
+                      <div className="px-3 py-2 text-xs font-bold text-white/50 uppercase tracking-wider">Tasks</div>
                       {matchedTasks.map(t => (
                         <button
                           key={t.id}
                           onClick={() => navigateToTab('today')}
-                          className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-slate-800 flex items-center gap-3 text-slate-200"
+                          className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-brand-secondary flex items-center gap-3 text-white/90"
                         >
-                          <CheckSquare className="w-4 h-4 text-amber-500" />
+                          <CheckSquare className="w-4 h-4 text-brand-accent" />
                           <span className="truncate">{t.title}</span>
                         </button>
                       ))}
@@ -133,24 +133,24 @@ export function PageShell() {
 
                   {matchedHabits.length > 0 && (
                     <div>
-                      <div className="px-3 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Habits</div>
+                      <div className="px-3 py-2 text-xs font-bold text-white/50 uppercase tracking-wider">Habits</div>
                       {matchedHabits.map(h => (
                         <button
                           key={h.id}
                           onClick={() => navigateToTab('habits')}
-                          className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-slate-800 flex items-center gap-3 text-slate-200"
+                          className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-brand-secondary flex items-center gap-3 text-white/90"
                         >
-                          <CalendarDays className="w-4 h-4 text-amber-500" />
+                          <CalendarDays className="w-4 h-4 text-brand-accent" />
                           <span className="truncate">{h.name}</span>
                         </button>
                       ))}
                     </div>
                   )}
 
-                  <div className="border-t border-slate-800 mt-2 pt-2">
+                  <div className="border-t border-brand-secondary mt-2 pt-2">
                     <button
                       onClick={handleAskAI}
-                      className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-amber-500/10 flex items-center gap-3 text-amber-500 transition-colors font-medium"
+                      className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-brand-accent/10 flex items-center gap-3 text-brand-accent transition-colors font-medium"
                     >
                       <Bot className="w-5 h-5" />
                       <span className="truncate">Ask AI: "{searchQuery}"</span>
@@ -169,13 +169,13 @@ export function PageShell() {
       </div>
 
       {/* Mobile TabBar */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full h-16 bg-slate-900 border-t border-slate-800 flex items-center justify-around z-50">
+      <nav className="md:hidden fixed bottom-0 left-0 w-full h-16 bg-brand-card border-t border-brand-secondary flex items-center justify-around z-50">
         {navItems.map((item) => (
           <button
             key={item.id}
             onClick={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: item.id })}
             className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
-              state.activeTab === item.id ? 'text-amber-500' : 'text-slate-500'
+              state.activeTab === item.id ? 'text-brand-accent' : 'text-white/50'
             }`}
           >
             <item.icon className="w-5 h-5" />

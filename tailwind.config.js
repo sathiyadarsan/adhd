@@ -8,10 +8,10 @@ export default {
     extend: {
       colors: {
         brand: {
-          dark: "#064582",
-          card: "#075CAD",
-          accent: "#FFC064",
-          accentDark: "#C97700",
+          bg: "#009ccc",
+          card: "#4b7e95",
+          accent: "#f49301",
+          secondary: "#259dbb",
         }
       },
       fontFamily: {
