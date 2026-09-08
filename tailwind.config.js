@@ -9,7 +9,7 @@ export default {
       colors: {
         brand: {
           bg: "#009ccc",
-          card: "#4b7e95",
+          card: "#1273D0",
           accent: "#f49301",
           secondary: "#259dbb",
         }
