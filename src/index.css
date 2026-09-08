@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 overflow-x-hidden;
+    /* Prevent bouncy scrolling on mobile iOS for a native feel */
+    overscroll-behavior-y: none;
+  }
+}
+
+/* Hide scrollbar for a cleaner mobile app look */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Ensure bottom nav space for modern mobile devices (e.g., iPhone home indicator) */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
