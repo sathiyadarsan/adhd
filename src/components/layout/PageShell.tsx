@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, CalendarDays, CheckSquare, BedDouble, MessageSquare, Bot, Inbox } from 'lucide-react';
+import { Search, CalendarDays, CheckSquare, BedDouble, MessageSquare, Bot, Inbox, Download, Upload } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import type { TabName } from '../../context/AppContext';
 
@@ -13,10 +13,10 @@ export function PageShell() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { state, dispatch } = useAppContext();
 
-  // Close dropdown on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -28,7 +28,8 @@ export function PageShell() {
   }, []);
 
   const navItems: { name: string; id: TabName; icon: any }[] = [
-    { name: 'Inbox', id: 'inbox', icon: Inbox }, { name: 'Today', id: 'today', icon: CheckSquare },
+    { name: 'Inbox', id: 'inbox', icon: Inbox },
+    { name: 'Today', id: 'today', icon: CheckSquare },
     { name: 'Habits & Calendar', id: 'habits', icon: CalendarDays },
     { name: 'Sleep', id: 'sleep', icon: BedDouble },
     { name: 'Chat', id: 'chat', icon: MessageSquare },
@@ -42,7 +43,6 @@ export function PageShell() {
     setIsDropdownOpen(false);
   };
 
-  // Search logic
   const searchLower = searchQuery.toLowerCase();
   const matchedTasks = state.tasks.filter(t => t.title.toLowerCase().includes(searchLower)).slice(0, 3);
   const matchedHabits = state.habits.filter(h => h.name.toLowerCase().includes(searchLower)).slice(0, 3);
@@ -52,6 +52,63 @@ export function PageShell() {
     dispatch({ type: 'SET_ACTIVE_TAB', payload: tab });
     setIsDropdownOpen(false);
     setSearchQuery('');
+  };
+
+  // Export Data
+  const handleExport = () => {
+    const { pendingChatQuery, activeTab, fabState, ...dataToExport } = state;
+    const dataStr = JSON.stringify(dataToExport, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `adhd_app_backup_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // Import Data
+  const handleImportClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const content = event.target?.result as string;
+        const parsed = JSON.parse(content);
+
+        if (window.confirm("Are you sure you want to import data? This will overwrite your current app state entirely.")) {
+          // ensure arrays exist
+          if (!parsed.tasks) parsed.tasks = [];
+          if (!parsed.habits) parsed.habits = [];
+          if (!parsed.sleepEntries) parsed.sleepEntries = [];
+          if (!parsed.chatMessages) parsed.chatMessages = [];
+          if (!parsed.inboxItems) parsed.inboxItems = [];
+
+          dispatch({ type: 'SET_STATE', payload: parsed });
+          alert("Data imported successfully!");
+        }
+      } catch (err) {
+        console.error("Import failed:", err);
+        alert("Failed to parse import file. Ensure it is a valid JSON backup.");
+      }
+
+      // Reset input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    };
+    reader.readAsText(file);
   };
 
   const renderContent = () => {
@@ -70,7 +127,7 @@ export function PageShell() {
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-64 border-r-4 border-white bg-brand-bg z-20 relative">
         <div className="p-6 border-b-4 border-white">
-          <h1 className="text-3xl text-white">Productivity</h1>
+          <h1 className="text-3xl text-white font-black uppercase tracking-tight">Productivity</h1>
         </div>
         <nav className="flex-1 p-4 space-y-4 overflow-y-auto">
           {navItems.map((item) => {
@@ -79,7 +136,7 @@ export function PageShell() {
               <button
                 key={item.id}
                 onClick={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: item.id })}
-                className={`w-full flex items-center space-x-3 px-4 py-4 border-4 transition-all uppercase font-bold tracking-wider ${
+                className={`w-full flex items-center space-x-3 px-4 py-4 border-4 transition-all uppercase font-black tracking-wider ${
                   isActive
                     ? 'bg-brand-accent text-brand-bg border-brand-accent shadow-brutal-accent translate-x-[-2px] translate-y-[-2px]'
                     : 'bg-brand-bg text-white border-white hover:bg-white hover:text-brand-bg'
@@ -91,6 +148,32 @@ export function PageShell() {
             );
           })}
         </nav>
+
+        {/* Settings / Data Options */}
+        <div className="p-4 border-t-4 border-white space-y-2">
+          <button
+            onClick={handleExport}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-brand-bg text-white border-4 border-white hover:bg-white hover:text-brand-bg font-black uppercase tracking-wider text-xs transition-colors"
+          >
+            <Download className="w-4 h-4 stroke-[3]" />
+            Export Data
+          </button>
+
+          <button
+            onClick={handleImportClick}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-brand-bg text-white border-4 border-white hover:bg-white hover:text-brand-bg font-black uppercase tracking-wider text-xs transition-colors"
+          >
+            <Upload className="w-4 h-4 stroke-[3]" />
+            Import Data
+          </button>
+          <input
+            type="file"
+            accept=".json"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+          />
+        </div>
       </aside>
 
       {/* Main Content Area */}
@@ -109,7 +192,7 @@ export function PageShell() {
                 }}
                 onFocus={() => setIsDropdownOpen(true)}
                 placeholder="SEARCH TASKS OR ASK AI..."
-                className="brutal-input w-full pl-14 font-bold tracking-wider shadow-brutal"
+                className="brutal-input w-full pl-14 font-black tracking-wider shadow-brutal uppercase text-sm md:text-base"
               />
             </div>
 
