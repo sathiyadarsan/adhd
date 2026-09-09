@@ -29,3 +29,9 @@ export interface ChatMessage {
   text: string;
   timestamp: string;
 }
+
+export interface InboxItem {
+  id: string;
+  text: string;
+  createdAt: string;
+}

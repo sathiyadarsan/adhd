@@ -1,16 +1,35 @@
-import { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { generateId } from '../utils/helpers';
 import type { Task } from '../types';
-import { Plus, Check, Clock, Trash2, X } from 'lucide-react';
+import { Plus, Check, Clock, Trash2, X, CalendarPlus } from 'lucide-react';
 import { DndContext, useDraggable, useDroppable } from '@dnd-kit/core';
 import { format, startOfToday, setHours } from 'date-fns';
+import { useEffect, useState } from 'react';
 
 export function TodayView() {
   const { state, dispatch } = useAppContext();
-  const [isFabOpen, setIsFabOpen] = useState(false);
+
+  // Use local state to override context if needed, but primarily driven by context for cross-view support
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskTime, setNewTaskTime] = useState('');
+
+  // Sync context FAB state to local state
+  useEffect(() => {
+    if (state.fabState.isOpen) {
+      setNewTaskTitle(state.fabState.initialTitle);
+      setNewTaskTime(state.fabState.initialTime);
+    }
+  }, [state.fabState.isOpen, state.fabState.initialTitle, state.fabState.initialTime]);
+
+  const closeFab = () => {
+    dispatch({ type: 'CLOSE_TASK_FAB' });
+    setNewTaskTitle('');
+    setNewTaskTime('');
+  };
+
+  const openFab = () => {
+    dispatch({ type: 'OPEN_TASK_FAB', payload: {} });
+  };
 
   const todayStr = format(startOfToday(), 'yyyy-MM-dd');
 
@@ -39,9 +58,7 @@ export function TodayView() {
     };
 
     dispatch({ type: 'ADD_TASK', payload: newTask });
-    setNewTaskTitle('');
-    setNewTaskTime('');
-    setIsFabOpen(false);
+    closeFab();
   };
 
   const handleDragEnd = (event: any) => {
@@ -49,7 +66,10 @@ export function TodayView() {
     if (!over) return;
 
     const taskId = active.id;
-    const timeSlot = over.id;
+    const timeSlot = over.id; // e.g. "08:00" or gap string like "gap-08:00"
+
+    // Ignore gaps for dropping
+    if (timeSlot.startsWith('gap-')) return;
 
     const task = state.tasks.find(t => t.id === taskId);
     if (task) {
@@ -62,8 +82,55 @@ export function TodayView() {
 
   const timelineHours = Array.from({ length: 18 }, (_, i) => {
     const d = setHours(new Date(), i + 6);
-    return format(d, 'HH:00');
+    return format(d, 'HH:00'); // "06:00" to "23:00"
   });
+
+  // Calculate gaps
+  const timelineElements = [];
+  let currentGapStart: string | null = null;
+  let gapLength = 0;
+
+  for (let i = 0; i < timelineHours.length; i++) {
+    const hour = timelineHours[i];
+    const hourPrefix = hour.split(':')[0];
+    const slotTasks = scheduledTasks.filter(t => t.scheduledTime?.startsWith(hourPrefix));
+
+    if (slotTasks.length === 0) {
+      if (currentGapStart === null) {
+        currentGapStart = hour;
+      }
+      gapLength++;
+    } else {
+      // If we hit a populated slot, check if we just ended a gap > 1 hour
+      if (currentGapStart && gapLength > 1) {
+        timelineElements.push(
+          <TimelineGap key={`gap-${currentGapStart}`} gapLength={gapLength} startTime={currentGapStart} />
+        );
+      } else if (currentGapStart && gapLength === 1) {
+        // Just one empty hour, render it normally
+        const hourFormatted = format(parseTime(currentGapStart), 'h a');
+        timelineElements.push(<TimeSlot key={currentGapStart} timeId={currentGapStart} label={hourFormatted} tasks={[]} />);
+      }
+
+      // Reset gap tracking
+      currentGapStart = null;
+      gapLength = 0;
+
+      // Render the populated slot
+      const hourFormatted = format(parseTime(hour), 'h a');
+      timelineElements.push(<TimeSlot key={hour} timeId={hour} label={hourFormatted} tasks={slotTasks} />);
+    }
+  }
+
+  // Handle trailing gap at the end of the day
+  if (currentGapStart && gapLength > 1) {
+    timelineElements.push(
+      <TimelineGap key={`gap-${currentGapStart}`} gapLength={gapLength} startTime={currentGapStart} />
+    );
+  } else if (currentGapStart && gapLength === 1) {
+    const hourFormatted = format(parseTime(currentGapStart), 'h a');
+    timelineElements.push(<TimeSlot key={currentGapStart} timeId={currentGapStart} label={hourFormatted} tasks={[]} />);
+  }
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
@@ -101,14 +168,7 @@ export function TodayView() {
               </h2>
 
               <div className="relative border-l-4 border-white ml-16 space-y-0 pb-4">
-                {timelineHours.map(hour => {
-                  const hourFormatted = format(parseTime(hour), 'h a');
-                  const slotTasks = scheduledTasks.filter(t => t.scheduledTime?.startsWith(hour.split(':')[0]));
-
-                  return (
-                    <TimeSlot key={hour} timeId={hour} label={hourFormatted} tasks={slotTasks} />
-                  );
-                })}
+                {timelineElements}
               </div>
             </div>
           </div>
@@ -117,15 +177,15 @@ export function TodayView() {
       </div>
 
       {/* Floating Action Button Overlay */}
-      {isFabOpen && (
-        <div className="fixed inset-0 bg-brand-bg/90 z-40 flex flex-col justify-end p-4 pb-32" onClick={() => setIsFabOpen(false)}>
+      {state.fabState.isOpen && (
+        <div className="fixed inset-0 bg-brand-bg/90 z-40 flex flex-col justify-end p-4 pb-32" onClick={closeFab}>
           <div
             className="bg-brand-card border-4 border-white p-8 w-full max-w-md mx-auto shadow-brutal transform transition-transform translate-x-[-4px] translate-y-[-4px]"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-8 border-b-4 border-white pb-4">
               <h3 className="text-2xl text-white">ADD TASK</h3>
-              <button onClick={() => setIsFabOpen(false)} className="text-white hover:text-brand-accent transition-colors">
+              <button onClick={closeFab} className="text-white hover:text-brand-accent transition-colors">
                 <X className="w-8 h-8 stroke-[3]" />
               </button>
             </div>
@@ -167,8 +227,8 @@ export function TodayView() {
 
       {/* FAB Button */}
       <button
-        onClick={() => setIsFabOpen(!isFabOpen)}
-        className={`fixed bottom-24 md:bottom-12 right-6 md:right-12 z-50 w-16 h-16 bg-brand-accent text-brand-bg border-4 border-white shadow-brutal flex items-center justify-center hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] active:translate-x-[6px] active:translate-y-[6px] active:shadow-none transition-all ${isFabOpen ? 'rotate-45' : ''}`}
+        onClick={state.fabState.isOpen ? closeFab : openFab}
+        className={`fixed bottom-24 md:bottom-12 right-6 md:right-12 z-50 w-16 h-16 bg-brand-accent text-brand-bg border-4 border-white shadow-brutal flex items-center justify-center hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] active:translate-x-[6px] active:translate-y-[6px] active:shadow-none transition-all ${state.fabState.isOpen ? 'rotate-45' : ''}`}
       >
         <Plus className="w-8 h-8 stroke-[4]" />
       </button>
@@ -257,7 +317,7 @@ function TimeSlot({ timeId, label, tasks }: { timeId: string, label: string, tas
         isOver ? 'bg-white/20' : ''
       }`}
     >
-      <div className="absolute -left-[4.5rem] top-3 text-xs font-black text-white bg-brand-bg border-2 border-white px-1 py-0.5 shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
+      <div className="absolute -left-[4.5rem] top-3 text-xs font-black text-white bg-brand-bg border-2 border-white px-1 py-0.5 shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] w-[3.5rem] text-center">
         {label}
       </div>
 
@@ -268,6 +328,33 @@ function TimeSlot({ timeId, label, tasks }: { timeId: string, label: string, tas
           <TaskItem key={task.id} task={task} />
         ))}
       </div>
+    </div>
+  );
+}
+
+function TimelineGap({ gapLength, startTime }: { gapLength: number, startTime: string }) {
+  const { dispatch } = useAppContext();
+
+  const handlePlanSlot = () => {
+    dispatch({
+      type: 'OPEN_TASK_FAB',
+      payload: { initialTime: startTime }
+    });
+  };
+
+  return (
+    <div className="relative min-h-[5rem] pl-8 pr-4 py-4 border-b-4 border-white/50 border-dashed flex items-center justify-center group bg-brand-bg/20">
+      <div className="absolute -left-[4.5rem] top-1/2 -translate-y-1/2 text-[10px] font-black text-white/50 w-[3.5rem] text-center uppercase tracking-widest">
+        {gapLength}H GAP
+      </div>
+
+      <button
+        onClick={handlePlanSlot}
+        className="opacity-0 group-hover:opacity-100 flex items-center gap-2 bg-brand-accent text-brand-bg border-4 border-brand-bg font-black uppercase text-sm px-4 py-2 hover:bg-white transition-all shadow-[4px_4px_0px_0px_#000]"
+      >
+        <CalendarPlus className="w-5 h-5 stroke-[3]" />
+        Plan this slot
+      </button>
     </div>
   );
 }

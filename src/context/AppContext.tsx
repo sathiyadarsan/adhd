@@ -1,20 +1,26 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import type { Task, Habit, SleepEntry, ChatMessage } from '../types';
+import type { Task, Habit, SleepEntry, ChatMessage, InboxItem } from '../types';
 
-export type TabName = 'today' | 'habits' | 'sleep' | 'chat';
+export type TabName = 'inbox' | 'today' | 'habits' | 'sleep' | 'chat';
 
 interface AppState {
   tasks: Task[];
   habits: Habit[];
   sleepEntries: SleepEntry[];
   chatMessages: ChatMessage[];
+  inboxItems: InboxItem[];
   pendingChatQuery: string;
   activeTab: TabName;
+  fabState: {
+    isOpen: boolean;
+    initialTitle: string;
+    initialTime: string;
+  };
 }
 
 type Action =
-  | { type: 'SET_STATE'; payload: Omit<AppState, 'pendingChatQuery' | 'activeTab'> }
+  | { type: 'SET_STATE'; payload: Partial<AppState> }
   | { type: 'SET_ACTIVE_TAB'; payload: TabName }
   | { type: 'ADD_TASK'; payload: Task }
   | { type: 'UPDATE_TASK'; payload: Task }
@@ -25,15 +31,25 @@ type Action =
   | { type: 'ADD_SLEEP_ENTRY'; payload: SleepEntry }
   | { type: 'DELETE_SLEEP_ENTRY'; payload: string }
   | { type: 'ADD_CHAT_MESSAGE'; payload: ChatMessage }
-  | { type: 'SET_PENDING_CHAT_QUERY'; payload: string };
+  | { type: 'SET_PENDING_CHAT_QUERY'; payload: string }
+  | { type: 'ADD_INBOX_ITEM'; payload: InboxItem }
+  | { type: 'DELETE_INBOX_ITEM'; payload: string }
+  | { type: 'OPEN_TASK_FAB'; payload: { initialTitle?: string; initialTime?: string } }
+  | { type: 'CLOSE_TASK_FAB' };
 
 const initialState: AppState = {
   tasks: [],
   habits: [],
   sleepEntries: [],
   chatMessages: [],
+  inboxItems: [],
   pendingChatQuery: '',
-  activeTab: 'today'
+  activeTab: 'today',
+  fabState: {
+    isOpen: false,
+    initialTitle: '',
+    initialTime: '',
+  }
 };
 
 function appReducer(state: AppState, action: Action): AppState {
@@ -72,7 +88,6 @@ function appReducer(state: AppState, action: Action): AppState {
     case 'DELETE_HABIT':
       return { ...state, habits: state.habits.filter(h => h.id !== action.payload) };
     case 'ADD_SLEEP_ENTRY': {
-      // replace if same date
       const filtered = state.sleepEntries.filter(s => s.date !== action.payload.date);
       return { ...state, sleepEntries: [...filtered, action.payload] };
     }
@@ -82,6 +97,24 @@ function appReducer(state: AppState, action: Action): AppState {
       return { ...state, chatMessages: [...state.chatMessages, action.payload] };
     case 'SET_PENDING_CHAT_QUERY':
       return { ...state, pendingChatQuery: action.payload };
+    case 'ADD_INBOX_ITEM':
+      return { ...state, inboxItems: [...state.inboxItems, action.payload] };
+    case 'DELETE_INBOX_ITEM':
+      return { ...state, inboxItems: state.inboxItems.filter(i => i.id !== action.payload) };
+    case 'OPEN_TASK_FAB':
+      return {
+        ...state,
+        fabState: {
+          isOpen: true,
+          initialTitle: action.payload.initialTitle || '',
+          initialTime: action.payload.initialTime || ''
+        }
+      };
+    case 'CLOSE_TASK_FAB':
+      return {
+        ...state,
+        fabState: { isOpen: false, initialTitle: '', initialTime: '' }
+      };
     default:
       return state;
   }
@@ -103,6 +136,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+        // ensure inboxItems exists for old state
+        if (!parsed.inboxItems) parsed.inboxItems = [];
         dispatch({ type: 'SET_STATE', payload: parsed });
       } catch (e) {
         console.error('Failed to parse state from localStorage', e);
@@ -112,8 +147,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Save state on change
   useEffect(() => {
-    // don't save pending chat query or active tab
-    const { pendingChatQuery, activeTab, ...stateToSave } = state;
+    // don't save transient state like pending query, active tab, or fab state
+    const { pendingChatQuery, activeTab, fabState, ...stateToSave } = state;
     localStorage.setItem('adhd_app_state', JSON.stringify(stateToSave));
   }, [state]);
 

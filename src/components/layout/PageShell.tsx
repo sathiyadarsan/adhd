@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, CalendarDays, CheckSquare, BedDouble, MessageSquare, Bot } from 'lucide-react';
+import { Search, CalendarDays, CheckSquare, BedDouble, MessageSquare, Bot, Inbox } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import type { TabName } from '../../context/AppContext';
 
@@ -7,6 +7,7 @@ import { TodayView } from '../../views/TodayView';
 import { HabitsView } from '../../views/HabitsView';
 import { SleepView } from '../../views/SleepView';
 import { ChatView } from '../../views/ChatView';
+import { InboxView } from '../../views/InboxView';
 
 export function PageShell() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,7 +28,7 @@ export function PageShell() {
   }, []);
 
   const navItems: { name: string; id: TabName; icon: any }[] = [
-    { name: 'Today', id: 'today', icon: CheckSquare },
+    { name: 'Inbox', id: 'inbox', icon: Inbox }, { name: 'Today', id: 'today', icon: CheckSquare },
     { name: 'Habits & Calendar', id: 'habits', icon: CalendarDays },
     { name: 'Sleep', id: 'sleep', icon: BedDouble },
     { name: 'Chat', id: 'chat', icon: MessageSquare },
@@ -55,6 +56,7 @@ export function PageShell() {
 
   const renderContent = () => {
     switch (state.activeTab) {
+      case 'inbox': return <InboxView />;
       case 'today': return <TodayView />;
       case 'habits': return <HabitsView />;
       case 'sleep': return <SleepView />;
