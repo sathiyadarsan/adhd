@@ -1,19 +1,17 @@
 import { useAppContext } from '../context/AppContext';
 import { generateId } from '../utils/helpers';
 import type { Task } from '../types';
-import { Plus, Check, Clock, Trash2, X, CalendarPlus } from 'lucide-react';
+import { Plus, Check, Clock, Trash2, X, CalendarPlus, Timer, Play, Pause, RotateCcw } from 'lucide-react';
 import { DndContext, useDraggable, useDroppable } from '@dnd-kit/core';
 import { format, startOfToday, setHours } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 export function TodayView() {
   const { state, dispatch } = useAppContext();
 
-  // Use local state to override context if needed, but primarily driven by context for cross-view support
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskTime, setNewTaskTime] = useState('');
 
-  // Sync context FAB state to local state
   useEffect(() => {
     if (state.fabState.isOpen) {
       setNewTaskTitle(state.fabState.initialTitle);
@@ -66,9 +64,8 @@ export function TodayView() {
     if (!over) return;
 
     const taskId = active.id;
-    const timeSlot = over.id; // e.g. "08:00" or gap string like "gap-08:00"
+    const timeSlot = over.id;
 
-    // Ignore gaps for dropping
     if (timeSlot.startsWith('gap-')) return;
 
     const task = state.tasks.find(t => t.id === taskId);
@@ -82,10 +79,9 @@ export function TodayView() {
 
   const timelineHours = Array.from({ length: 18 }, (_, i) => {
     const d = setHours(new Date(), i + 6);
-    return format(d, 'HH:00'); // "06:00" to "23:00"
+    return format(d, 'HH:00');
   });
 
-  // Calculate gaps
   const timelineElements = [];
   let currentGapStart: string | null = null;
   let gapLength = 0;
@@ -101,28 +97,23 @@ export function TodayView() {
       }
       gapLength++;
     } else {
-      // If we hit a populated slot, check if we just ended a gap > 1 hour
       if (currentGapStart && gapLength > 1) {
         timelineElements.push(
           <TimelineGap key={`gap-${currentGapStart}`} gapLength={gapLength} startTime={currentGapStart} />
         );
       } else if (currentGapStart && gapLength === 1) {
-        // Just one empty hour, render it normally
         const hourFormatted = format(parseTime(currentGapStart), 'h a');
         timelineElements.push(<TimeSlot key={currentGapStart} timeId={currentGapStart} label={hourFormatted} tasks={[]} />);
       }
 
-      // Reset gap tracking
       currentGapStart = null;
       gapLength = 0;
 
-      // Render the populated slot
       const hourFormatted = format(parseTime(hour), 'h a');
       timelineElements.push(<TimeSlot key={hour} timeId={hour} label={hourFormatted} tasks={slotTasks} />);
     }
   }
 
-  // Handle trailing gap at the end of the day
   if (currentGapStart && gapLength > 1) {
     timelineElements.push(
       <TimelineGap key={`gap-${currentGapStart}`} gapLength={gapLength} startTime={currentGapStart} />
@@ -184,7 +175,7 @@ export function TodayView() {
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-8 border-b-4 border-white pb-4">
-              <h3 className="text-2xl text-white">ADD TASK</h3>
+              <h3 className="text-2xl text-white font-black uppercase">ADD TASK</h3>
               <button onClick={closeFab} className="text-white hover:text-brand-accent transition-colors">
                 <X className="w-8 h-8 stroke-[3]" />
               </button>
@@ -250,6 +241,8 @@ function TaskItem({ task }: { task: Task }) {
     id: task.id,
   });
 
+  const [isTimerOpen, setIsTimerOpen] = useState(false);
+
   const style = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
     zIndex: 50,
@@ -270,37 +263,150 @@ function TaskItem({ task }: { task: Task }) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-4 p-4 bg-brand-bg border-4 border-white group transition-all ${
+      className={`flex flex-col p-4 bg-brand-bg border-4 border-white group transition-all ${
         isDragging ? 'opacity-90 shadow-brutal-accent translate-x-[-2px] translate-y-[-2px]' : 'shadow-brutal hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]'
       } ${task.completed ? 'opacity-60 bg-brand-bg/50' : ''}`}
     >
-      <button
-        onClick={toggleComplete}
-        className={`w-8 h-8 flex-shrink-0 border-4 flex items-center justify-center transition-colors ${
-          task.completed
-            ? 'bg-brand-accent border-brand-accent text-brand-bg'
-            : 'bg-white border-white hover:bg-brand-accent hover:border-brand-accent text-transparent hover:text-brand-bg'
-        }`}
-      >
-        <Check className="w-6 h-6 stroke-[4]" />
-      </button>
+      <div className="flex items-center gap-4">
+        <button
+          onClick={toggleComplete}
+          className={`w-8 h-8 flex-shrink-0 border-4 flex items-center justify-center transition-colors ${
+            task.completed
+              ? 'bg-brand-accent border-brand-accent text-brand-bg'
+              : 'bg-white border-white hover:bg-brand-accent hover:border-brand-accent text-transparent hover:text-brand-bg'
+          }`}
+        >
+          <Check className="w-6 h-6 stroke-[4]" />
+        </button>
 
-      <div
-        {...attributes}
-        {...listeners}
-        className="flex-1 cursor-grab active:cursor-grabbing select-none"
-      >
-        <p className={`text-white font-bold text-lg leading-tight ${task.completed ? 'line-through opacity-70' : ''}`}>
-          {task.title}
-        </p>
+        <div
+          {...attributes}
+          {...listeners}
+          className="flex-1 cursor-grab active:cursor-grabbing select-none"
+        >
+          <p className={`text-white font-bold text-lg leading-tight ${task.completed ? 'line-through opacity-70' : ''}`}>
+            {task.title}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsTimerOpen(!isTimerOpen)}
+            className={`p-2 transition-all border-4 ${
+              isTimerOpen
+                ? 'bg-brand-accent text-brand-bg border-brand-bg'
+                : 'text-white border-transparent hover:border-white'
+            }`}
+            title="Focus Timer"
+          >
+            <Timer className="w-5 h-5 stroke-[3]" />
+          </button>
+
+          <button
+            onClick={removeTask}
+            className="opacity-0 group-hover:opacity-100 p-2 text-white hover:bg-white hover:text-brand-bg border-4 border-transparent hover:border-brand-bg transition-all"
+          >
+            <Trash2 className="w-5 h-5 stroke-[3]" />
+          </button>
+        </div>
       </div>
 
-      <button
-        onClick={removeTask}
-        className="opacity-0 group-hover:opacity-100 p-2 text-white hover:bg-white hover:text-brand-bg border-2 border-transparent hover:border-brand-bg transition-all"
-      >
-        <Trash2 className="w-5 h-5 stroke-[3]" />
-      </button>
+      {isTimerOpen && (
+        <div className="mt-4 pt-4 border-t-4 border-white/20">
+          <TaskTimer defaultMinutes={25} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TaskTimer({ defaultMinutes }: { defaultMinutes: number }) {
+  const [minutesInput, setMinutesInput] = useState(defaultMinutes.toString());
+  const [timeLeft, setTimeLeft] = useState(defaultMinutes * 60);
+  const [isRunning, setIsRunning] = useState(false);
+  const timerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (isRunning && timeLeft > 0) {
+      timerRef.current = window.setInterval(() => {
+        setTimeLeft(prev => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      setIsRunning(false);
+    }
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [isRunning, timeLeft]);
+
+  const toggleTimer = () => {
+    if (!isRunning && timeLeft === 0) {
+      // Reset if trying to start from 0
+      const parsed = parseInt(minutesInput) || defaultMinutes;
+      setTimeLeft(parsed * 60);
+    }
+    setIsRunning(!isRunning);
+  };
+
+  const resetTimer = () => {
+    setIsRunning(false);
+    const parsed = parseInt(minutesInput) || defaultMinutes;
+    setTimeLeft(parsed * 60);
+  };
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const handleInputBlur = () => {
+    if (isRunning) return; // Don't allow changing duration while running
+    const parsed = parseInt(minutesInput);
+    if (!isNaN(parsed) && parsed > 0) {
+      setTimeLeft(parsed * 60);
+    } else {
+      setMinutesInput(defaultMinutes.toString());
+      setTimeLeft(defaultMinutes * 60);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-4 bg-brand-secondary p-3 border-4 border-white shadow-brutal-sm">
+      <div className="flex items-center gap-2">
+        <input
+          type="number"
+          value={minutesInput}
+          onChange={(e) => setMinutesInput(e.target.value)}
+          onBlur={handleInputBlur}
+          disabled={isRunning}
+          className="w-14 bg-white text-brand-bg font-black text-center border-4 border-transparent focus:border-brand-bg outline-none disabled:opacity-50"
+          min="1"
+          max="120"
+        />
+        <span className="text-white font-black text-xs uppercase tracking-wider">Min</span>
+      </div>
+
+      <div className="flex-1 text-center font-black text-2xl tracking-widest text-white tabular-nums">
+        {formatTime(timeLeft)}
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          onClick={toggleTimer}
+          className="bg-white text-brand-bg p-2 border-4 border-brand-bg hover:bg-brand-accent hover:border-brand-accent transition-colors shadow-[2px_2px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+        >
+          {isRunning ? <Pause className="w-5 h-5 stroke-[4]" /> : <Play className="w-5 h-5 stroke-[4] ml-0.5" />}
+        </button>
+        <button
+          onClick={resetTimer}
+          className="bg-transparent text-white p-2 border-4 border-transparent hover:border-white transition-colors"
+          title="Reset"
+        >
+          <RotateCcw className="w-5 h-5 stroke-[3]" />
+        </button>
+      </div>
     </div>
   );
 }

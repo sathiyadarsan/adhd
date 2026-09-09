@@ -14,6 +14,8 @@ export interface Habit {
   name: string;
   createdAt: string;
   entries: Record<string, boolean>; // key = "YYYY-MM-DD", value = done?
+  goalType?: 'daily' | 'weekly';
+  weeklyTarget?: number;
 }
 
 export interface SleepEntry {

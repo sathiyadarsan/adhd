@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { generateId, calculateStreak } from '../utils/helpers';
+import { generateId, calculateStreak, getWeeklyProgress } from '../utils/helpers';
 import type { Habit } from '../types';
 import { format, subDays, eachDayOfInterval, isSameDay, startOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { Plus, Flame, Trash2, Calendar as CalendarIcon, X, Target } from 'lucide-react';
@@ -9,6 +9,8 @@ export function HabitsView() {
   const { state, dispatch } = useAppContext();
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [newHabitName, setNewHabitName] = useState('');
+  const [goalType, setGoalType] = useState<'daily'|'weekly'>('daily');
+  const [weeklyTarget, setWeeklyTarget] = useState(3);
 
   const [timeSpanDays, setTimeSpanDays] = useState(84);
   const [selectedMonth] = useState(new Date());
@@ -21,7 +23,9 @@ export function HabitsView() {
       id: generateId(),
       name: newHabitName,
       createdAt: new Date().toISOString(),
-      entries: {}
+      entries: {},
+      goalType,
+      weeklyTarget: goalType === 'weekly' ? weeklyTarget : undefined,
     };
 
     dispatch({ type: 'ADD_HABIT', payload: newHabit });
@@ -156,8 +160,8 @@ export function HabitsView() {
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-8 border-b-4 border-white pb-4">
-              <h3 className="text-2xl text-white">CREATE HABIT</h3>
-              <button onClick={() => setIsFabOpen(false)} className="text-white hover:text-brand-accent transition-colors">
+              <h3 className="text-2xl text-white font-black uppercase">CREATE HABIT</h3>
+              <button type="button" onClick={() => setIsFabOpen(false)} className="text-white hover:text-brand-accent transition-colors">
                 <X className="w-8 h-8 stroke-[3]" />
               </button>
             </div>
@@ -174,6 +178,38 @@ export function HabitsView() {
                   className="brutal-input w-full"
                 />
               </div>
+
+              <div>
+                <label className="block font-black text-white uppercase tracking-wider mb-2">Goal Type</label>
+                <div className="flex gap-4">
+                  <label className="flex-1 cursor-pointer">
+                    <input type="radio" name="goalType" value="daily" checked={goalType === 'daily'} onChange={() => setGoalType('daily')} className="sr-only peer" />
+                    <div className="bg-brand-bg text-white border-4 border-white font-black uppercase tracking-wider px-4 py-3 text-center peer-checked:bg-white peer-checked:text-brand-bg transition-colors shadow-brutal peer-checked:translate-x-[2px] peer-checked:translate-y-[2px] peer-checked:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+                      Daily
+                    </div>
+                  </label>
+                  <label className="flex-1 cursor-pointer">
+                    <input type="radio" name="goalType" value="weekly" checked={goalType === 'weekly'} onChange={() => setGoalType('weekly')} className="sr-only peer" />
+                    <div className="bg-brand-bg text-white border-4 border-white font-black uppercase tracking-wider px-4 py-3 text-center peer-checked:bg-white peer-checked:text-brand-bg transition-colors shadow-brutal peer-checked:translate-x-[2px] peer-checked:translate-y-[2px] peer-checked:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+                      Weekly
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {goalType === 'weekly' && (
+                <div>
+                  <label className="block font-black text-white uppercase tracking-wider mb-2">Target Per Week</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="7"
+                    value={weeklyTarget}
+                    onChange={(e) => setWeeklyTarget(parseInt(e.target.value) || 1)}
+                    className="brutal-input w-full"
+                  />
+                </div>
+              )}
 
               <button
                 type="submit"
@@ -204,6 +240,9 @@ function HabitRow({ habit }: { habit: Habit }) {
   const todayStr = format(new Date(), 'yyyy-MM-dd');
   const isDoneToday = !!habit.entries[todayStr];
   const streak = calculateStreak(habit);
+  const isWeekly = habit.goalType === 'weekly';
+  const progress = isWeekly ? getWeeklyProgress(habit) : 0;
+  const target = habit.weeklyTarget || 0;
 
   const toggleToday = () => {
     dispatch({
@@ -234,7 +273,14 @@ function HabitRow({ habit }: { habit: Habit }) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </button>
-        <span className="text-white font-bold text-lg uppercase tracking-wider truncate">{habit.name}</span>
+        <div className="flex flex-col truncate">
+          <span className="text-white font-bold text-lg uppercase tracking-wider truncate">{habit.name}</span>
+          {isWeekly && (
+            <span className="text-xs font-black text-brand-accent uppercase tracking-widest mt-0.5">
+              {progress}/{target} This Week
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-4 self-end sm:self-auto pl-14 sm:pl-0">
@@ -242,17 +288,17 @@ function HabitRow({ habit }: { habit: Habit }) {
         {/* Badges */}
         <div className="flex gap-2">
           {streak >= 3 && (
-            <div title="3-Day Streak: Hot" className="bg-white border-4 border-brand-accent p-1.5 shadow-brutal-sm">
+            <div title="3 Streak: Hot" className="bg-white border-4 border-brand-accent p-1.5 shadow-brutal-sm">
               <Flame className="w-5 h-5 fill-brand-accent text-brand-accent" />
             </div>
           )}
           {isPro && (
-            <div title="7-Day Streak: Pro" className="bg-brand-accent border-4 border-white p-1.5 shadow-brutal-sm text-brand-bg">
+            <div title="7 Streak: Pro" className="bg-brand-accent border-4 border-white p-1.5 shadow-brutal-sm text-brand-bg">
               <Target className="w-5 h-5 stroke-[4]" />
             </div>
           )}
           {isMaster && (
-            <div title="30-Day Streak: Master" className="bg-brand-bg border-4 border-brand-accent p-1.5 shadow-[2px_2px_0px_0px_#f49301] text-brand-accent flex items-center justify-center">
+            <div title="30 Streak: Master" className="bg-brand-bg border-4 border-brand-accent p-1.5 shadow-[2px_2px_0px_0px_#f49301] text-brand-accent flex items-center justify-center">
               <span className="font-black text-lg leading-none px-1">★</span>
             </div>
           )}
@@ -262,7 +308,7 @@ function HabitRow({ habit }: { habit: Habit }) {
         <div className={`flex items-center gap-2 px-3 py-2 border-4 text-sm font-black uppercase tracking-wider ${
           streak > 0 ? 'bg-white border-brand-bg text-brand-bg' : 'bg-brand-bg border-white/30 text-white/50'
         }`}>
-          <span className="text-xl">{streak}</span> <span>Days</span>
+          <span className="text-xl">{streak}</span> <span>{isWeekly ? 'Wks' : 'Days'}</span>
         </div>
 
         <button
