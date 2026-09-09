@@ -8,17 +8,14 @@ export function ChatView() {
   const [inputValue, setInputValue] = useState('');
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
 
-  // Handle handoff from global search
   useEffect(() => {
     if (state.pendingChatQuery) {
       handleSendMessage(state.pendingChatQuery);
-      // clear the pending query so it doesn't fire again
       dispatch({ type: 'SET_PENDING_CHAT_QUERY', payload: '' });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.pendingChatQuery]);
 
-  // Auto scroll to bottom
   useEffect(() => {
     endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [state.chatMessages]);
@@ -26,7 +23,6 @@ export function ChatView() {
   const handleSendMessage = (text: string) => {
     if (!text.trim()) return;
 
-    // Add User message
     dispatch({
       type: 'ADD_CHAT_MESSAGE',
       payload: {
@@ -39,13 +35,12 @@ export function ChatView() {
 
     setInputValue('');
 
-    // Simulate AI response delay
     setTimeout(() => {
       dispatch({
         type: 'ADD_CHAT_MESSAGE',
         payload: {
           id: generateId(),
-          text: "AI response coming soon. (This is a placeholder that can be connected to a real API).",
+          text: "AI RESPONSE INITIATED. THIS IS A HARDCODED PLACEHOLDER READY FOR API INTEGRATION.",
           sender: 'assistant',
           timestamp: new Date().toISOString()
         }
@@ -59,30 +54,34 @@ export function ChatView() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto h-[calc(100vh-140px)] md:h-[calc(100vh-120px)] flex flex-col pb-6">
-      <div className="flex-1 overflow-y-auto space-y-4 mb-4 bg-brand-card rounded-2xl p-6 border border-brand-secondary shadow-lg">
+    <div className="max-w-4xl mx-auto h-[calc(100vh-160px)] md:h-[calc(100vh-140px)] flex flex-col pb-8">
+      <h1 className="text-4xl text-white mb-6 border-b-4 border-white pb-4 inline-block pr-12 shrink-0">Ask AI</h1>
+
+      <div className="flex-1 overflow-y-auto space-y-6 mb-6 bg-brand-card border-4 border-white shadow-brutal p-6">
 
         {state.chatMessages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-white/50 space-y-4">
-            <Bot className="w-12 h-12 text-white/40" />
-            <p className="text-sm">How can I help you manage your day?</p>
+          <div className="h-full flex flex-col items-center justify-center text-white space-y-6">
+            <div className="bg-brand-bg p-4 border-4 border-white shadow-brutal-sm">
+              <Bot className="w-16 h-16 stroke-[3]" />
+            </div>
+            <p className="text-xl font-black uppercase tracking-widest text-center">HOW CAN I OPTIMIZE<br/>YOUR DAY?</p>
           </div>
         ) : (
           state.chatMessages.map((msg) => (
             <div
               key={msg.id}
-              className={`flex gap-3 max-w-[80%] ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
+              className={`flex gap-4 max-w-[85%] ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
             >
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                msg.sender === 'user' ? 'bg-brand-accent text-slate-900' : 'bg-brand-secondary text-brand-accent border border-brand-secondary/50'
+              <div className={`w-12 h-12 flex items-center justify-center flex-shrink-0 border-4 border-brand-bg shadow-[2px_2px_0px_0px_#000] ${
+                msg.sender === 'user' ? 'bg-brand-accent text-brand-bg' : 'bg-white text-brand-bg'
               }`}>
-                {msg.sender === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                {msg.sender === 'user' ? <User className="w-6 h-6 stroke-[3]" /> : <Bot className="w-6 h-6 stroke-[3]" />}
               </div>
 
-              <div className={`p-4 rounded-2xl text-sm ${
+              <div className={`p-5 text-lg font-bold border-4 border-brand-bg shadow-[4px_4px_0px_0px_#000] ${
                 msg.sender === 'user'
-                  ? 'bg-brand-accent text-slate-900 rounded-tr-none'
-                  : 'bg-brand-secondary border border-brand-secondary/50 text-white/90 rounded-tl-none'
+                  ? 'bg-brand-accent text-brand-bg'
+                  : 'bg-white text-brand-bg'
               }`}>
                 {msg.text}
               </div>
@@ -92,20 +91,20 @@ export function ChatView() {
         <div ref={endOfMessagesRef} />
       </div>
 
-      <form onSubmit={onSubmit} className="relative">
+      <form onSubmit={onSubmit} className="relative shrink-0">
         <input
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Ask AI for productivity tips..."
-          className="w-full bg-brand-card text-white rounded-2xl px-6 py-4 pr-14 outline-none focus:ring-2 focus:ring-brand-accent border border-brand-secondary shadow-lg placeholder:text-white/50"
+          placeholder="TYPE YOUR QUERY HERE..."
+          className="brutal-input w-full pr-20 text-lg shadow-brutal"
         />
         <button
           type="submit"
           disabled={!inputValue.trim()}
-          className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-brand-accent text-slate-900 rounded-xl disabled:opacity-50 disabled:bg-brand-secondary disabled:text-white/50 transition-colors"
+          className="absolute right-3 top-1/2 -translate-y-1/2 p-3 bg-brand-accent border-4 border-brand-bg text-brand-bg disabled:opacity-50 hover:bg-white transition-colors shadow-[2px_2px_0px_0px_#000]"
         >
-          <Send className="w-5 h-5" />
+          <Send className="w-6 h-6 stroke-[3]" />
         </button>
       </form>
     </div>

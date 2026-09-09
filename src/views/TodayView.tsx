@@ -10,11 +10,10 @@ export function TodayView() {
   const { state, dispatch } = useAppContext();
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
-  const [newTaskTime, setNewTaskTime] = useState(''); // e.g. "08:00"
+  const [newTaskTime, setNewTaskTime] = useState('');
 
   const todayStr = format(startOfToday(), 'yyyy-MM-dd');
 
-  // Filter for unscheduled tasks or tasks scheduled for today
   const tasks = state.tasks.filter(t => !t.scheduledDate || t.scheduledDate === todayStr);
   const unscheduledTasks = tasks.filter(t => !t.scheduledTime);
   const scheduledTasks = tasks.filter(t => t.scheduledTime);
@@ -24,7 +23,6 @@ export function TodayView() {
     if (!newTaskTitle.trim()) return;
 
     let timeToSave = newTaskTime;
-    // ensure time is in "HH:00" format if provided, for simplicity in the grid
     if (timeToSave) {
       const [h] = timeToSave.split(':');
       timeToSave = `${h.padStart(2, '0')}:00`;
@@ -50,9 +48,6 @@ export function TodayView() {
     const { active, over } = event;
     if (!over) return;
 
-    // active.id is task id
-    // over.id is timeslot (e.g., "08:00")
-
     const taskId = active.id;
     const timeSlot = over.id;
 
@@ -65,7 +60,6 @@ export function TodayView() {
     }
   };
 
-  // Generate timeline hours: 6 AM to 11 PM
   const timelineHours = Array.from({ length: 18 }, (_, i) => {
     const d = setHours(new Date(), i + 6);
     return format(d, 'HH:00');
@@ -74,24 +68,24 @@ export function TodayView() {
   return (
     <DndContext onDragEnd={handleDragEnd}>
       <div className="w-full max-w-6xl mx-auto pb-24">
-        <h1 className="text-3xl font-serif font-bold text-white mb-6">Today</h1>
+        <h1 className="text-4xl text-white mb-8 border-b-4 border-white pb-4 inline-block pr-12">Today</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
 
           {/* Left Column: To-Do */}
           <div>
-            <div className="bg-brand-card rounded-2xl border border-brand-secondary shadow-lg p-6">
-              <h2 className="text-sm font-bold text-white/50 tracking-wider mb-4 uppercase">To-Do</h2>
+            <div className="bg-brand-card border-4 border-white shadow-brutal p-6 h-full">
+              <h2 className="text-xl bg-white text-brand-bg inline-block px-3 py-1 mb-6 border-2 border-brand-bg shadow-[2px_2px_0px_0px_#000]">To-Do</h2>
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {unscheduledTasks.map(task => (
                   <TaskItem key={task.id} task={task} />
                 ))}
                 {unscheduledTasks.length === 0 && (
-                  <div className="text-center py-8 text-white/50 border border-dashed border-brand-secondary rounded-xl bg-brand-card/50">
-                    No unscheduled tasks
+                  <div className="text-center py-12 text-white border-4 border-dashed border-white bg-brand-bg font-bold tracking-widest uppercase">
+                    No tasks left
                     <br />
-                    <span className="text-xs">Use the + button to add one.</span>
+                    <span className="text-xs opacity-70">Slam the + button.</span>
                   </div>
                 )}
               </div>
@@ -100,13 +94,13 @@ export function TodayView() {
 
           {/* Right Column: Timeline */}
           <div>
-            <div className="bg-brand-card rounded-2xl border border-brand-secondary shadow-lg p-6 pl-2">
-              <h2 className="text-sm font-bold text-white/50 tracking-wider mb-6 uppercase flex items-center gap-2 pl-4">
-                <Clock className="w-4 h-4" />
+            <div className="bg-brand-secondary border-4 border-white shadow-brutal p-6 h-full pl-2">
+              <h2 className="text-xl bg-white text-brand-bg inline-flex items-center gap-2 px-3 py-1 mb-8 border-2 border-brand-bg shadow-[2px_2px_0px_0px_#000] ml-4">
+                <Clock className="w-5 h-5 stroke-[3]" />
                 Timeline
               </h2>
 
-              <div className="relative border-l-2 border-brand-secondary ml-16 space-y-0">
+              <div className="relative border-l-4 border-white ml-16 space-y-0 pb-4">
                 {timelineHours.map(hour => {
                   const hourFormatted = format(parseTime(hour), 'h a');
                   const slotTasks = scheduledTasks.filter(t => t.scheduledTime?.startsWith(hour.split(':')[0]));
@@ -122,47 +116,47 @@ export function TodayView() {
         </div>
       </div>
 
-      {/* Floating Action Button (FAB) and Overlay */}
+      {/* Floating Action Button Overlay */}
       {isFabOpen && (
-        <div className="fixed inset-0 bg-brand-bg/80 z-40 flex flex-col justify-end p-4 pb-24" onClick={() => setIsFabOpen(false)}>
+        <div className="fixed inset-0 bg-brand-bg/90 z-40 flex flex-col justify-end p-4 pb-32" onClick={() => setIsFabOpen(false)}>
           <div
-            className="bg-brand-card border border-brand-secondary rounded-2xl p-6 w-full max-w-md mx-auto shadow-2xl transform transition-transform"
+            className="bg-brand-card border-4 border-white p-8 w-full max-w-md mx-auto shadow-brutal transform transition-transform translate-x-[-4px] translate-y-[-4px]"
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg text-white">Add New Task</h3>
-              <button onClick={() => setIsFabOpen(false)} className="text-white/50 hover:text-white/80 transition-colors">
-                <X className="w-5 h-5" />
+            <div className="flex justify-between items-center mb-8 border-b-4 border-white pb-4">
+              <h3 className="text-2xl text-white">ADD TASK</h3>
+              <button onClick={() => setIsFabOpen(false)} className="text-white hover:text-brand-accent transition-colors">
+                <X className="w-8 h-8 stroke-[3]" />
               </button>
             </div>
 
-            <form onSubmit={handleAddTask} className="space-y-4">
+            <form onSubmit={handleAddTask} className="space-y-6">
               <div>
-                <label className="block text-xs font-bold text-white/50 uppercase tracking-wide mb-1">Title</label>
+                <label className="block font-black text-white uppercase tracking-wider mb-2">Title</label>
                 <input
                   autoFocus
                   type="text"
                   value={newTaskTitle}
                   onChange={(e) => setNewTaskTitle(e.target.value)}
-                  placeholder="E.g., Review PRs..."
-                  className="w-full bg-brand-bg text-white rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-accent placeholder:text-white/40 border border-brand-secondary"
+                  placeholder="DO THE THING..."
+                  className="brutal-input w-full"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-white/50 uppercase tracking-wide mb-1">Time (Optional)</label>
+                <label className="block font-black text-white uppercase tracking-wider mb-2">Time</label>
                 <input
                   type="time"
                   value={newTaskTime}
                   onChange={(e) => setNewTaskTime(e.target.value)}
-                  className="w-full bg-brand-bg text-white rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-accent border border-brand-secondary [color-scheme:dark]"
+                  className="brutal-input w-full [color-scheme:dark]"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={!newTaskTitle.trim()}
-                className="w-full bg-brand-accent text-slate-900 font-bold rounded-xl px-4 py-3 hover:bg-brand-accent/80 transition-colors shadow-lg disabled:opacity-50"
+                className="brutal-btn-accent w-full disabled:opacity-50 disabled:pointer-events-none mt-4"
               >
                 Create Task
               </button>
@@ -174,9 +168,9 @@ export function TodayView() {
       {/* FAB Button */}
       <button
         onClick={() => setIsFabOpen(!isFabOpen)}
-        className={`fixed bottom-20 md:bottom-12 right-6 md:right-12 z-50 w-14 h-14 bg-brand-accent text-slate-900 rounded-full shadow-[0_0_20px_rgba(245,158,11,0.3)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all ${isFabOpen ? 'rotate-45' : ''}`}
+        className={`fixed bottom-24 md:bottom-12 right-6 md:right-12 z-50 w-16 h-16 bg-brand-accent text-brand-bg border-4 border-white shadow-brutal flex items-center justify-center hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] active:translate-x-[6px] active:translate-y-[6px] active:shadow-none transition-all ${isFabOpen ? 'rotate-45' : ''}`}
       >
-        <Plus className="w-6 h-6" />
+        <Plus className="w-8 h-8 stroke-[4]" />
       </button>
 
     </DndContext>
@@ -216,19 +210,19 @@ function TaskItem({ task }: { task: Task }) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-3 p-3 rounded-xl bg-brand-secondary/50 border border-brand-secondary/50/50 group ${
-        isDragging ? 'opacity-75 shadow-2xl ring-2 ring-brand-accent' : 'hover:border-slate-600'
-      } ${task.completed ? 'opacity-50' : ''}`}
+      className={`flex items-center gap-4 p-4 bg-brand-bg border-4 border-white group transition-all ${
+        isDragging ? 'opacity-90 shadow-brutal-accent translate-x-[-2px] translate-y-[-2px]' : 'shadow-brutal hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]'
+      } ${task.completed ? 'opacity-60 bg-brand-bg/50' : ''}`}
     >
       <button
         onClick={toggleComplete}
-        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+        className={`w-8 h-8 flex-shrink-0 border-4 flex items-center justify-center transition-colors ${
           task.completed
-            ? 'bg-brand-accent border-brand-accent text-slate-900'
-            : 'border-slate-600 hover:border-brand-accent'
+            ? 'bg-brand-accent border-brand-accent text-brand-bg'
+            : 'bg-white border-white hover:bg-brand-accent hover:border-brand-accent text-transparent hover:text-brand-bg'
         }`}
       >
-        {task.completed && <Check className="w-4 h-4" />}
+        <Check className="w-6 h-6 stroke-[4]" />
       </button>
 
       <div
@@ -236,16 +230,16 @@ function TaskItem({ task }: { task: Task }) {
         {...listeners}
         className="flex-1 cursor-grab active:cursor-grabbing select-none"
       >
-        <p className={`text-white/90 ${task.completed ? 'line-through text-white/50' : ''}`}>
+        <p className={`text-white font-bold text-lg leading-tight ${task.completed ? 'line-through opacity-70' : ''}`}>
           {task.title}
         </p>
       </div>
 
       <button
         onClick={removeTask}
-        className="opacity-0 group-hover:opacity-100 p-2 text-white/50 hover:text-red-400 transition-opacity"
+        className="opacity-0 group-hover:opacity-100 p-2 text-white hover:bg-white hover:text-brand-bg border-2 border-transparent hover:border-brand-bg transition-all"
       >
-        <Trash2 className="w-4 h-4" />
+        <Trash2 className="w-5 h-5 stroke-[3]" />
       </button>
     </div>
   );
@@ -259,18 +253,17 @@ function TimeSlot({ timeId, label, tasks }: { timeId: string, label: string, tas
   return (
     <div
       ref={setNodeRef}
-      className={`relative min-h-[4.5rem] pl-6 pr-4 py-2 border-b border-brand-secondary transition-colors ${
-        isOver ? 'bg-brand-secondary/50' : ''
+      className={`relative min-h-[5rem] pl-8 pr-4 py-3 border-b-4 border-white transition-colors ${
+        isOver ? 'bg-white/20' : ''
       }`}
     >
-      <div className="absolute -left-16 top-3 text-xs font-bold text-white/50 w-12 text-right">
+      <div className="absolute -left-[4.5rem] top-3 text-xs font-black text-white bg-brand-bg border-2 border-white px-1 py-0.5 shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
         {label}
       </div>
 
-      {/* Connector dot */}
-      <div className="absolute -left-[5px] top-4 w-2 h-2 rounded-full bg-brand-secondary/70" />
+      <div className="absolute -left-[10px] top-4 w-4 h-4 bg-brand-accent border-4 border-white" />
 
-      <div className="space-y-2">
+      <div className="space-y-4">
         {tasks.map(task => (
           <TaskItem key={task.id} task={task} />
         ))}
