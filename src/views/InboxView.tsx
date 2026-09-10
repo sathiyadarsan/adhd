@@ -23,14 +23,11 @@ export function InboxView() {
   };
 
   const handleSchedule = (item: InboxItem) => {
-    // Open the Task FAB with this item's text
     dispatch({
       type: 'OPEN_TASK_FAB',
       payload: { initialTitle: item.text }
     });
-    // Remove it from the inbox
     dispatch({ type: 'DELETE_INBOX_ITEM', payload: item.id });
-    // Switch to Today view so they can see the FAB and the result
     dispatch({ type: 'SET_ACTIVE_TAB', payload: 'today' });
   };
 
@@ -40,58 +37,62 @@ export function InboxView() {
 
   return (
     <div className="w-full max-w-4xl mx-auto pb-24">
-      <h1 className="text-4xl text-white mb-8 border-b-4 border-white pb-4 inline-block pr-12">Brain Dump</h1>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-100">Brain Dump</h1>
+        <p className="text-slate-400 mt-2">Capture thoughts quickly, schedule them later.</p>
+      </div>
 
-      <div className="bg-brand-card border-4 border-white shadow-brutal p-6 mb-8">
+      <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 mb-8 shadow-sm">
         <form onSubmit={handleAddItem} className="relative">
           <input
             autoFocus
             type="text"
             value={newItemText}
             onChange={(e) => setNewItemText(e.target.value)}
-            placeholder="TYPE ANYTHING ON YOUR MIND..."
-            className="brutal-input w-full text-lg shadow-brutal pr-16"
+            placeholder="Type anything on your mind..."
+            className="w-full pl-4 pr-16 py-3 bg-slate-900 border border-slate-700/50 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all shadow-inner"
           />
           <button
             type="submit"
             disabled={!newItemText.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-brand-accent border-4 border-brand-bg text-brand-bg disabled:opacity-50 hover:bg-white transition-colors shadow-[2px_2px_0px_0px_#000]"
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-indigo-500 text-white rounded-lg disabled:opacity-50 disabled:bg-slate-700 hover:bg-indigo-600 transition-colors"
           >
-            <Inbox className="w-6 h-6 stroke-[3]" />
+            <Inbox className="w-5 h-5" />
           </button>
         </form>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {state.inboxItems.length === 0 ? (
-          <div className="text-center py-12 text-white border-4 border-dashed border-white bg-brand-bg font-bold tracking-widest uppercase">
-            INBOX ZERO
-            <br />
-            <span className="text-xs opacity-70">YOUR MIND IS CLEAR.</span>
+          <div className="text-center py-16 text-slate-500 border border-dashed border-slate-700/50 rounded-2xl bg-slate-800/20">
+            <Inbox className="w-12 h-12 mx-auto mb-4 text-slate-600 opacity-50" />
+            <p className="font-medium text-lg text-slate-400">Inbox Zero</p>
+            <p className="text-sm opacity-70 mt-1">Your mind is clear.</p>
           </div>
         ) : (
           state.inboxItems.map(item => (
             <div
               key={item.id}
-              className="flex items-center gap-4 p-4 bg-brand-bg border-4 border-white shadow-brutal hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] transition-all group"
+              className="flex items-center gap-4 p-4 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl hover:border-slate-600 transition-colors shadow-sm group"
             >
               <div className="flex-1">
-                <p className="text-white font-bold text-lg leading-tight">{item.text}</p>
+                <p className="text-slate-200 font-medium">{item.text}</p>
               </div>
 
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleSchedule(item)}
-                  className="flex items-center gap-2 bg-brand-accent border-4 border-brand-bg text-brand-bg px-3 py-2 font-black uppercase text-xs hover:bg-white hover:text-brand-bg transition-colors shadow-[2px_2px_0px_0px_#000]"
+                  className="flex items-center gap-2 bg-slate-700 text-slate-200 px-3 py-2 rounded-lg font-medium text-sm hover:bg-slate-600 transition-colors"
                 >
-                  <CalendarPlus className="w-4 h-4 stroke-[3]" />
+                  <CalendarPlus className="w-4 h-4 text-indigo-400" />
                   <span className="hidden sm:inline">Schedule</span>
                 </button>
                 <button
                   onClick={() => handleDelete(item.id)}
-                  className="p-2 text-white hover:bg-white hover:text-brand-bg border-4 border-transparent hover:border-brand-bg transition-all"
+                  className="p-2 text-slate-400 hover:bg-slate-700 hover:text-red-400 rounded-lg transition-colors"
+                  aria-label="Delete item"
                 >
-                  <Trash2 className="w-5 h-5 stroke-[3]" />
+                  <Trash2 className="w-5 h-5" />
                 </button>
               </div>
             </div>

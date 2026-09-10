@@ -54,7 +54,6 @@ export function PageShell() {
     setSearchQuery('');
   };
 
-  // Export Data
   const handleExport = () => {
     const { pendingChatQuery, activeTab, fabState, ...dataToExport } = state;
     const dataStr = JSON.stringify(dataToExport, null, 2);
@@ -70,7 +69,6 @@ export function PageShell() {
     URL.revokeObjectURL(url);
   };
 
-  // Import Data
   const handleImportClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
@@ -88,7 +86,6 @@ export function PageShell() {
         const parsed = JSON.parse(content);
 
         if (window.confirm("Are you sure you want to import data? This will overwrite your current app state entirely.")) {
-          // ensure arrays exist
           if (!parsed.tasks) parsed.tasks = [];
           if (!parsed.habits) parsed.habits = [];
           if (!parsed.sleepEntries) parsed.sleepEntries = [];
@@ -103,7 +100,6 @@ export function PageShell() {
         alert("Failed to parse import file. Ensure it is a valid JSON backup.");
       }
 
-      // Reset input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -123,26 +119,26 @@ export function PageShell() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-brand-bg text-white overflow-hidden font-sans">
+    <div className="flex h-screen w-full bg-slate-900 text-slate-200 overflow-hidden font-sans">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 border-r-4 border-white bg-brand-bg z-20 relative">
-        <div className="p-6 border-b-4 border-white">
-          <h1 className="text-3xl text-white font-black uppercase tracking-tight">Productivity</h1>
+      <aside className="hidden md:flex flex-col w-64 border-r border-slate-800 bg-slate-900/50 backdrop-blur-sm z-20">
+        <div className="p-6 border-b border-slate-800/50">
+          <h1 className="text-xl font-bold text-slate-100">Productivity</h1>
         </div>
-        <nav className="flex-1 p-4 space-y-4 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {navItems.map((item) => {
             const isActive = state.activeTab === item.id;
             return (
               <button
                 key={item.id}
                 onClick={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: item.id })}
-                className={`w-full flex items-center space-x-3 px-4 py-4 border-4 transition-all uppercase font-black tracking-wider ${
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all font-medium ${
                   isActive
-                    ? 'bg-brand-accent text-brand-bg border-brand-accent shadow-brutal-accent translate-x-[-2px] translate-y-[-2px]'
-                    : 'bg-brand-bg text-white border-white hover:bg-white hover:text-brand-bg'
+                    ? 'bg-indigo-500/10 text-indigo-400'
+                    : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
                 }`}
               >
-                <item.icon className="w-6 h-6 stroke-[3]" />
+                <item.icon className={`w-5 h-5 ${isActive ? 'text-indigo-400' : 'text-slate-500'}`} />
                 <span>{item.name}</span>
               </button>
             );
@@ -150,20 +146,20 @@ export function PageShell() {
         </nav>
 
         {/* Settings / Data Options */}
-        <div className="p-4 border-t-4 border-white space-y-2">
+        <div className="p-4 border-t border-slate-800/50 space-y-2">
           <button
             onClick={handleExport}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-brand-bg text-white border-4 border-white hover:bg-white hover:text-brand-bg font-black uppercase tracking-wider text-xs transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-slate-100 text-sm font-medium transition-colors border border-slate-700/50"
           >
-            <Download className="w-4 h-4 stroke-[3]" />
+            <Download className="w-4 h-4 text-slate-400" />
             Export Data
           </button>
 
           <button
             onClick={handleImportClick}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-brand-bg text-white border-4 border-white hover:bg-white hover:text-brand-bg font-black uppercase tracking-wider text-xs transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-slate-100 text-sm font-medium transition-colors border border-slate-700/50"
           >
-            <Upload className="w-4 h-4 stroke-[3]" />
+            <Upload className="w-4 h-4 text-slate-400" />
             Import Data
           </button>
           <input
@@ -179,10 +175,10 @@ export function PageShell() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         {/* Top Header / Global Search */}
-        <header className="h-24 flex items-center justify-center px-4 md:px-8 border-b-4 border-white relative shrink-0 z-30 bg-brand-bg">
+        <header className="h-20 flex items-center justify-center px-4 md:px-8 border-b border-slate-800/50 shrink-0 z-30 bg-slate-900/50 backdrop-blur-sm">
           <div className="w-full max-w-2xl relative" ref={dropdownRef}>
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-white stroke-[3] pointer-events-none" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
@@ -191,25 +187,25 @@ export function PageShell() {
                   setIsDropdownOpen(true);
                 }}
                 onFocus={() => setIsDropdownOpen(true)}
-                placeholder="SEARCH TASKS OR ASK AI..."
-                className="brutal-input w-full pl-14 font-black tracking-wider shadow-brutal uppercase text-sm md:text-base"
+                placeholder="Search tasks or ask AI..."
+                className="w-full pl-12 pr-4 py-3 bg-slate-800 border border-slate-700/50 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all shadow-sm"
               />
             </div>
 
             {/* Dropdown Results */}
             {showResults && (
-              <div className="absolute top-[calc(100%+16px)] left-0 w-full bg-brand-bg border-4 border-white shadow-brutal z-50">
-                <div className="p-0 max-h-96 overflow-y-auto divide-y-4 divide-white">
+              <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-slate-800 border border-slate-700 rounded-xl shadow-xl overflow-hidden z-50">
+                <div className="p-2 max-h-96 overflow-y-auto">
                   {matchedTasks.length > 0 && (
-                    <div>
-                      <div className="px-4 py-2 text-sm font-black bg-white text-brand-bg uppercase">Tasks</div>
+                    <div className="mb-2">
+                      <div className="px-3 py-1.5 text-xs font-semibold text-slate-500 uppercase">Tasks</div>
                       {matchedTasks.map(t => (
                         <button
                           key={t.id}
                           onClick={() => navigateToTab('today')}
-                          className="w-full text-left px-4 py-4 hover:bg-white hover:text-brand-bg flex items-center gap-3 text-white transition-colors font-bold"
+                          className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-slate-700/50 flex items-center gap-3 text-slate-200 transition-colors"
                         >
-                          <CheckSquare className="w-5 h-5 text-brand-accent stroke-[3]" />
+                          <CheckSquare className="w-4 h-4 text-indigo-400" />
                           <span className="truncate">{t.title}</span>
                         </button>
                       ))}
@@ -217,27 +213,27 @@ export function PageShell() {
                   )}
 
                   {matchedHabits.length > 0 && (
-                    <div>
-                      <div className="px-4 py-2 text-sm font-black bg-white text-brand-bg uppercase">Habits</div>
+                    <div className="mb-2">
+                      <div className="px-3 py-1.5 text-xs font-semibold text-slate-500 uppercase">Habits</div>
                       {matchedHabits.map(h => (
                         <button
                           key={h.id}
                           onClick={() => navigateToTab('habits')}
-                          className="w-full text-left px-4 py-4 hover:bg-white hover:text-brand-bg flex items-center gap-3 text-white transition-colors font-bold"
+                          className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-slate-700/50 flex items-center gap-3 text-slate-200 transition-colors"
                         >
-                          <CalendarDays className="w-5 h-5 text-brand-accent stroke-[3]" />
+                          <CalendarDays className="w-4 h-4 text-indigo-400" />
                           <span className="truncate">{h.name}</span>
                         </button>
                       ))}
                     </div>
                   )}
 
-                  <div>
+                  <div className="border-t border-slate-700/50 mt-1 pt-1">
                     <button
                       onClick={handleAskAI}
-                      className="w-full text-left px-4 py-4 hover:bg-brand-accent hover:text-brand-bg flex items-center gap-3 text-brand-accent transition-colors font-black uppercase tracking-wider"
+                      className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-indigo-500/10 flex items-center gap-3 text-indigo-400 transition-colors font-medium"
                     >
-                      <Bot className="w-6 h-6 stroke-[3]" />
+                      <Bot className="w-4 h-4" />
                       <span className="truncate">Ask AI: "{searchQuery}"</span>
                     </button>
                   </div>
@@ -248,25 +244,25 @@ export function PageShell() {
         </header>
 
         {/* Scrollable Content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-brand-bg">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-900">
           {renderContent()}
         </main>
       </div>
 
       {/* Mobile TabBar */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full h-20 bg-brand-bg border-t-4 border-white flex items-center z-50 divide-x-4 divide-white">
+      <nav className="md:hidden fixed bottom-0 left-0 w-full h-16 bg-slate-900/90 backdrop-blur-md border-t border-slate-800 flex items-center z-50 px-2 pb-safe">
         {navItems.map((item) => {
           const isActive = state.activeTab === item.id;
           return (
             <button
               key={item.id}
               onClick={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: item.id })}
-              className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${
-                isActive ? 'bg-brand-accent text-brand-bg' : 'bg-brand-bg text-white hover:bg-white hover:text-brand-bg'
+              className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors rounded-lg mx-1 ${
+                isActive ? 'text-indigo-400' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'
               }`}
             >
-              <item.icon className="w-6 h-6 stroke-[3]" />
-              <span className="text-[10px] font-black uppercase tracking-wider">{item.name}</span>
+              <item.icon className="w-5 h-5" />
+              <span className="text-[10px] font-medium">{item.name}</span>
             </button>
           )
         })}

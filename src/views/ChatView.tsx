@@ -40,7 +40,7 @@ export function ChatView() {
         type: 'ADD_CHAT_MESSAGE',
         payload: {
           id: generateId(),
-          text: "AI RESPONSE INITIATED. THIS IS A HARDCODED PLACEHOLDER READY FOR API INTEGRATION.",
+          text: "AI response initiated. This is a hardcoded placeholder ready for API integration.",
           sender: 'assistant',
           timestamp: new Date().toISOString()
         }
@@ -55,16 +55,18 @@ export function ChatView() {
 
   return (
     <div className="max-w-4xl mx-auto h-[calc(100vh-160px)] md:h-[calc(100vh-140px)] flex flex-col pb-8">
-      <h1 className="text-4xl text-white mb-6 border-b-4 border-white pb-4 inline-block pr-12 shrink-0">Ask AI</h1>
+      <div className="mb-6 shrink-0">
+        <h1 className="text-3xl font-bold text-slate-100">Ask AI</h1>
+      </div>
 
-      <div className="flex-1 overflow-y-auto space-y-6 mb-6 bg-brand-card border-4 border-white shadow-brutal p-6">
+      <div className="flex-1 overflow-y-auto space-y-6 mb-6 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 shadow-sm">
 
         {state.chatMessages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-white space-y-6">
-            <div className="bg-brand-bg p-4 border-4 border-white shadow-brutal-sm">
-              <Bot className="w-16 h-16 stroke-[3]" />
+          <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4">
+            <div className="bg-slate-800 p-4 rounded-2xl border border-slate-700/50 shadow-sm">
+              <Bot className="w-8 h-8 text-indigo-400" />
             </div>
-            <p className="text-xl font-black uppercase tracking-widest text-center">HOW CAN I OPTIMIZE<br/>YOUR DAY?</p>
+            <p className="text-sm font-medium">How can I optimize your day?</p>
           </div>
         ) : (
           state.chatMessages.map((msg) => (
@@ -72,16 +74,16 @@ export function ChatView() {
               key={msg.id}
               className={`flex gap-4 max-w-[85%] ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
             >
-              <div className={`w-12 h-12 flex items-center justify-center flex-shrink-0 border-4 border-brand-bg shadow-[2px_2px_0px_0px_#000] ${
-                msg.sender === 'user' ? 'bg-brand-accent text-brand-bg' : 'bg-white text-brand-bg'
+              <div className={`w-10 h-10 flex items-center justify-center flex-shrink-0 rounded-xl shadow-sm ${
+                msg.sender === 'user' ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-indigo-400 border border-slate-700/50'
               }`}>
-                {msg.sender === 'user' ? <User className="w-6 h-6 stroke-[3]" /> : <Bot className="w-6 h-6 stroke-[3]" />}
+                {msg.sender === 'user' ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
               </div>
 
-              <div className={`p-5 text-lg font-bold border-4 border-brand-bg shadow-[4px_4px_0px_0px_#000] ${
+              <div className={`p-4 text-sm font-medium leading-relaxed rounded-2xl shadow-sm ${
                 msg.sender === 'user'
-                  ? 'bg-brand-accent text-brand-bg'
-                  : 'bg-white text-brand-bg'
+                  ? 'bg-indigo-500 text-white rounded-tr-sm'
+                  : 'bg-slate-800 border border-slate-700/50 text-slate-200 rounded-tl-sm'
               }`}>
                 {msg.text}
               </div>
@@ -96,15 +98,15 @@ export function ChatView() {
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          placeholder="TYPE YOUR QUERY HERE..."
-          className="brutal-input w-full pr-20 text-lg shadow-brutal"
+          placeholder="Type your query here..."
+          className="w-full pl-6 pr-16 py-4 bg-slate-800 border border-slate-700/50 rounded-2xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-shadow shadow-sm"
         />
         <button
           type="submit"
           disabled={!inputValue.trim()}
-          className="absolute right-3 top-1/2 -translate-y-1/2 p-3 bg-brand-accent border-4 border-brand-bg text-brand-bg disabled:opacity-50 hover:bg-white transition-colors shadow-[2px_2px_0px_0px_#000]"
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-indigo-500 text-white rounded-xl disabled:opacity-50 disabled:bg-slate-700 hover:bg-indigo-600 transition-colors shadow-sm"
         >
-          <Send className="w-6 h-6 stroke-[3]" />
+          <Send className="w-5 h-5" />
         </button>
       </form>
     </div>

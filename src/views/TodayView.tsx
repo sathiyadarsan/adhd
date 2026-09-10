@@ -52,7 +52,7 @@ export function TodayView() {
       completed: false,
       createdAt: new Date().toISOString(),
       category: 'brand-accent',
-      scheduledDate: state.selectedDate, // attach to currently selected date
+      scheduledDate: state.selectedDate,
       scheduledTime: timeToSave || undefined,
     };
 
@@ -124,7 +124,6 @@ export function TodayView() {
     timelineElements.push(<TimeSlot key={currentGapStart} timeId={currentGapStart} label={hourFormatted} tasks={[]} />);
   }
 
-  // Scrollable Day Strip (approx 2 weeks centered around selected date)
   const stripDays = Array.from({ length: 15 }, (_, i) => subDays(addDays(selectedDateObj, i), 7));
 
   return (
@@ -132,8 +131,8 @@ export function TodayView() {
       <div className="w-full max-w-6xl mx-auto pb-24">
 
         {/* Day Strip Header */}
-        <div className="mb-8 overflow-x-auto pb-4 no-scrollbar">
-          <div className="flex gap-4 min-w-max">
+        <div className="mb-6 overflow-x-auto pb-2 no-scrollbar">
+          <div className="flex gap-2 min-w-max">
             {stripDays.map(day => {
               const isSelected = isSameDay(day, selectedDateObj);
               const isCurrentToday = isSameDay(day, todayObj);
@@ -142,42 +141,42 @@ export function TodayView() {
                 <button
                   key={day.toISOString()}
                   onClick={() => dispatch({ type: 'SET_SELECTED_DATE', payload: format(day, 'yyyy-MM-dd') })}
-                  className={`flex flex-col items-center justify-center p-3 border-4 min-w-[5rem] transition-all hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] ${
+                  className={`flex flex-col items-center justify-center p-2 rounded-xl min-w-[4rem] transition-colors border ${
                     isSelected
-                      ? 'bg-brand-accent border-brand-bg text-brand-bg shadow-[4px_4px_0px_0px_#000] scale-110 z-10'
+                      ? 'bg-indigo-500 border-indigo-400 text-white shadow-md'
                       : isCurrentToday
-                        ? 'bg-white border-brand-bg text-brand-bg shadow-brutal-sm'
-                        : 'bg-brand-bg border-white text-white shadow-brutal-sm'
+                        ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700'
+                        : 'bg-slate-800/30 border-transparent text-slate-400 hover:bg-slate-800/80 hover:text-slate-200'
                   }`}
                 >
-                  <span className="text-xs font-black uppercase tracking-widest">{format(day, 'EEE')}</span>
-                  <span className="text-2xl font-black">{format(day, 'd')}</span>
-                  {isCurrentToday && !isSelected && <div className="mt-1 w-2 h-2 bg-brand-accent border border-brand-bg" />}
+                  <span className="text-[10px] font-medium uppercase tracking-wider">{format(day, 'EEE')}</span>
+                  <span className="text-lg font-bold">{format(day, 'd')}</span>
+                  {isCurrentToday && !isSelected && <div className="mt-0.5 w-1 h-1 rounded-full bg-indigo-400" />}
                 </button>
               );
             })}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-          {/* Left Column: To-Do (Now shows ALL tasks for the day) */}
+          {/* Left Column: To-Do */}
           <div>
-            <div className="bg-brand-card border-4 border-white shadow-brutal p-6 h-full">
+            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 h-full shadow-sm">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl bg-white text-brand-bg inline-block px-3 py-1 border-2 border-brand-bg shadow-[2px_2px_0px_0px_#000]">To-Do</h2>
-                <span className="text-white font-black uppercase">{format(selectedDateObj, 'MMM d, yyyy')}</span>
+                <h2 className="text-lg font-semibold text-slate-100">To-Do</h2>
+                <span className="text-sm font-medium text-slate-400">{format(selectedDateObj, 'MMM d, yyyy')}</span>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {dailyTasks.map(task => (
                   <TaskItem key={task.id} task={task} showTimeLabel={true} />
                 ))}
                 {dailyTasks.length === 0 && (
-                  <div className="text-center py-12 text-white border-4 border-dashed border-white bg-brand-bg font-bold tracking-widest uppercase">
+                  <div className="text-center py-12 text-slate-500 border border-dashed border-slate-700/50 rounded-xl bg-slate-800/30">
                     No tasks for this day
                     <br />
-                    <span className="text-xs opacity-70">Slam the + button.</span>
+                    <span className="text-sm opacity-70">Tap the + button to add one.</span>
                   </div>
                 )}
               </div>
@@ -186,13 +185,13 @@ export function TodayView() {
 
           {/* Right Column: Timeline */}
           <div>
-            <div className="bg-brand-secondary border-4 border-white shadow-brutal p-6 h-full pl-2">
-              <h2 className="text-xl bg-white text-brand-bg inline-flex items-center gap-2 px-3 py-1 mb-8 border-2 border-brand-bg shadow-[2px_2px_0px_0px_#000] ml-4">
-                <Clock className="w-5 h-5 stroke-[3]" />
+            <div className="bg-slate-800/30 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 h-full pl-2 shadow-sm">
+              <h2 className="text-lg font-semibold text-slate-100 mb-6 flex items-center gap-2 pl-4">
+                <Clock className="w-4 h-4 text-indigo-400" />
                 Timeline
               </h2>
 
-              <div className="relative border-l-4 border-white ml-16 space-y-0 pb-4">
+              <div className="relative border-l border-slate-700/50 ml-16 space-y-0 pb-4">
                 {timelineElements}
               </div>
             </div>
@@ -203,45 +202,45 @@ export function TodayView() {
 
       {/* Floating Action Button Overlay */}
       {state.fabState.isOpen && (
-        <div className="fixed inset-0 bg-brand-bg/90 z-40 flex flex-col justify-end p-4 pb-32" onClick={closeFab}>
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 flex flex-col justify-end p-4 pb-32 transition-all" onClick={closeFab}>
           <div
-            className="bg-brand-card border-4 border-white p-8 w-full max-w-md mx-auto shadow-brutal transform transition-transform translate-x-[-4px] translate-y-[-4px]"
+            className="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-md mx-auto shadow-2xl"
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center mb-8 border-b-4 border-white pb-4">
-              <h3 className="text-2xl text-white font-black uppercase">ADD TASK</h3>
-              <button onClick={closeFab} className="text-white hover:text-brand-accent transition-colors">
-                <X className="w-8 h-8 stroke-[3]" />
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-slate-100">Add Task</h3>
+              <button onClick={closeFab} className="p-1 text-slate-400 hover:text-slate-200 hover:bg-slate-700 rounded-lg transition-colors">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleAddTask} className="space-y-6">
+            <form onSubmit={handleAddTask} className="space-y-5">
               <div>
-                <label className="block font-black text-white uppercase tracking-wider mb-2">Title</label>
+                <label className="block text-sm font-medium text-slate-400 mb-1">Title</label>
                 <input
                   autoFocus
                   type="text"
                   value={newTaskTitle}
                   onChange={(e) => setNewTaskTitle(e.target.value)}
-                  placeholder="DO THE THING..."
-                  className="brutal-input w-full"
+                  placeholder="e.g., Review PRs..."
+                  className="w-full pl-4 pr-4 py-3 bg-slate-900 border border-slate-700/50 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-shadow"
                 />
               </div>
 
               <div>
-                <label className="block font-black text-white uppercase tracking-wider mb-2">Time</label>
+                <label className="block text-sm font-medium text-slate-400 mb-1">Time (Optional)</label>
                 <input
                   type="time"
                   value={newTaskTime}
                   onChange={(e) => setNewTaskTime(e.target.value)}
-                  className="brutal-input w-full [color-scheme:dark]"
+                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700/50 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-shadow [color-scheme:dark]"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={!newTaskTitle.trim()}
-                className="brutal-btn-accent w-full disabled:opacity-50 disabled:pointer-events-none mt-4"
+                className="w-full bg-indigo-500 text-white font-medium rounded-xl px-4 py-3 hover:bg-indigo-600 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed mt-2"
               >
                 Create Task
               </button>
@@ -253,9 +252,9 @@ export function TodayView() {
       {/* FAB Button */}
       <button
         onClick={state.fabState.isOpen ? closeFab : openFab}
-        className={`fixed bottom-24 md:bottom-12 right-6 md:right-12 z-50 w-16 h-16 bg-brand-accent text-brand-bg border-4 border-white shadow-brutal flex items-center justify-center hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] active:translate-x-[6px] active:translate-y-[6px] active:shadow-none transition-all ${state.fabState.isOpen ? 'rotate-45' : ''}`}
+        className={`fixed bottom-20 md:bottom-12 right-6 md:right-12 z-50 w-14 h-14 bg-indigo-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-indigo-600 hover:scale-105 active:scale-95 transition-all ${state.fabState.isOpen ? 'rotate-45' : ''}`}
       >
-        <Plus className="w-8 h-8 stroke-[4]" />
+        <Plus className="w-6 h-6" />
       </button>
 
     </DndContext>
@@ -301,59 +300,61 @@ function TaskItem({ task, showTimeLabel = false }: { task: Task, showTimeLabel?:
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex flex-col p-4 bg-brand-bg border-4 border-white group transition-all ${
-        isDragging ? 'opacity-90 shadow-brutal-accent translate-x-[-2px] translate-y-[-2px]' : 'shadow-brutal hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]'
-      } ${task.completed ? 'opacity-60 bg-brand-bg/50' : ''}`}
+      className={`flex flex-col p-3 rounded-xl border transition-all ${
+        isDragging
+          ? 'bg-slate-800 border-indigo-500/50 shadow-xl scale-[1.02] opacity-90'
+          : 'bg-slate-800/80 border-slate-700/50 hover:border-slate-600 shadow-sm'
+      } ${task.completed ? 'opacity-60 bg-slate-800/40' : ''}`}
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <button
           onClick={toggleComplete}
-          className={`w-8 h-8 flex-shrink-0 border-4 flex items-center justify-center transition-colors ${
+          className={`w-6 h-6 flex-shrink-0 rounded flex items-center justify-center transition-colors border ${
             task.completed
-              ? 'bg-brand-accent border-brand-accent text-brand-bg'
-              : 'bg-white border-white hover:bg-brand-accent hover:border-brand-accent text-transparent hover:text-brand-bg'
+              ? 'bg-indigo-500 border-indigo-500 text-white'
+              : 'bg-slate-900 border-slate-600 hover:border-indigo-500 text-transparent hover:text-indigo-400'
           }`}
         >
-          <Check className="w-6 h-6 stroke-[4]" />
+          <Check className="w-4 h-4" />
         </button>
 
         <div
           {...attributes}
           {...listeners}
-          className="flex-1 cursor-grab active:cursor-grabbing select-none"
+          className="flex-1 cursor-grab active:cursor-grabbing select-none py-1"
         >
-          <div className={`text-white font-bold text-lg leading-tight ${task.completed ? 'line-through opacity-70' : ''}`}>
+          <div className={`text-slate-200 font-medium leading-snug ${task.completed ? 'line-through text-slate-500' : ''}`}>
             {showTimeLabel && formattedTime && (
-              <span className="text-brand-accent font-black mr-2 text-sm uppercase">{formattedTime} &middot;</span>
+              <span className="text-indigo-400 font-semibold mr-2 text-xs">{formattedTime} &middot;</span>
             )}
             {task.title}
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 opacity-60 hover:opacity-100 transition-opacity">
           <button
             onClick={() => setIsTimerOpen(!isTimerOpen)}
-            className={`p-2 transition-all border-4 ${
+            className={`p-1.5 rounded-lg transition-colors ${
               isTimerOpen
-                ? 'bg-brand-accent text-brand-bg border-brand-bg'
-                : 'text-white border-transparent hover:border-white'
+                ? 'bg-indigo-500/20 text-indigo-400'
+                : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'
             }`}
             title="Focus Timer"
           >
-            <Timer className="w-5 h-5 stroke-[3]" />
+            <Timer className="w-4 h-4" />
           </button>
 
           <button
             onClick={removeTask}
-            className="opacity-0 group-hover:opacity-100 p-2 text-white hover:bg-white hover:text-brand-bg border-4 border-transparent hover:border-brand-bg transition-all"
+            className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-red-400 transition-colors"
           >
-            <Trash2 className="w-5 h-5 stroke-[3]" />
+            <Trash2 className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {isTimerOpen && (
-        <div className="mt-4 pt-4 border-t-4 border-white/20">
+        <div className="mt-3 pt-3 border-t border-slate-700/50">
           <TaskTimer defaultMinutes={25} />
         </div>
       )}
@@ -383,7 +384,6 @@ function TaskTimer({ defaultMinutes }: { defaultMinutes: number }) {
 
   const toggleTimer = () => {
     if (!isRunning && timeLeft === 0) {
-      // Reset if trying to start from 0
       const parsed = parseInt(minutesInput) || defaultMinutes;
       setTimeLeft(parsed * 60);
     }
@@ -414,38 +414,42 @@ function TaskTimer({ defaultMinutes }: { defaultMinutes: number }) {
   };
 
   return (
-    <div className="flex items-center gap-4 bg-brand-secondary p-3 border-4 border-white shadow-brutal-sm">
-      <div className="flex items-center gap-2">
+    <div className="flex items-center gap-3 bg-slate-900/50 rounded-lg p-2 border border-slate-700/50">
+      <div className="flex items-center gap-1.5 bg-slate-800 rounded-md px-2 py-1 border border-slate-700/50">
         <input
           type="number"
           value={minutesInput}
           onChange={(e) => setMinutesInput(e.target.value)}
           onBlur={handleInputBlur}
           disabled={isRunning}
-          className="w-14 bg-white text-brand-bg font-black text-center border-4 border-transparent focus:border-brand-bg outline-none disabled:opacity-50"
+          className="w-8 bg-transparent text-slate-200 font-medium text-center outline-none disabled:opacity-50 text-sm"
           min="1"
           max="120"
         />
-        <span className="text-white font-black text-xs uppercase tracking-wider">Min</span>
+        <span className="text-slate-500 font-medium text-[10px] uppercase">Min</span>
       </div>
 
-      <div className="flex-1 text-center font-black text-2xl tracking-widest text-white tabular-nums">
+      <div className="flex-1 text-center font-semibold text-lg text-slate-100 tabular-nums tracking-wide">
         {formatTime(timeLeft)}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         <button
           onClick={toggleTimer}
-          className="bg-white text-brand-bg p-2 border-4 border-brand-bg hover:bg-brand-accent hover:border-brand-accent transition-colors shadow-[2px_2px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+          className={`p-1.5 rounded-md transition-colors ${
+            isRunning
+              ? 'bg-slate-700 text-slate-200 hover:bg-slate-600'
+              : 'bg-indigo-500 text-white hover:bg-indigo-600'
+          }`}
         >
-          {isRunning ? <Pause className="w-5 h-5 stroke-[4]" /> : <Play className="w-5 h-5 stroke-[4] ml-0.5" />}
+          {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
         </button>
         <button
           onClick={resetTimer}
-          className="bg-transparent text-white p-2 border-4 border-transparent hover:border-white transition-colors"
+          className="text-slate-400 p-1.5 hover:bg-slate-800 hover:text-slate-200 rounded-md transition-colors"
           title="Reset"
         >
-          <RotateCcw className="w-5 h-5 stroke-[3]" />
+          <RotateCcw className="w-4 h-4" />
         </button>
       </div>
     </div>
@@ -460,17 +464,17 @@ function TimeSlot({ timeId, label, tasks }: { timeId: string, label: string, tas
   return (
     <div
       ref={setNodeRef}
-      className={`relative min-h-[5rem] pl-8 pr-4 py-3 border-b-4 border-white transition-colors ${
-        isOver ? 'bg-white/20' : ''
+      className={`relative min-h-[4rem] pl-6 pr-2 py-2 border-b border-slate-700/50 transition-colors ${
+        isOver ? 'bg-slate-700/20' : ''
       }`}
     >
-      <div className="absolute -left-[4.5rem] top-3 text-xs font-black text-white bg-brand-bg border-2 border-white px-1 py-0.5 shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] w-[3.5rem] text-center">
+      <div className="absolute -left-14 top-3 text-xs font-medium text-slate-500 w-10 text-right">
         {label}
       </div>
 
-      <div className="absolute -left-[10px] top-4 w-4 h-4 bg-brand-accent border-4 border-white" />
+      <div className="absolute -left-[5px] top-4 w-2.5 h-2.5 rounded-full bg-slate-800 border-2 border-slate-600" />
 
-      <div className="space-y-4">
+      <div className="space-y-2">
         {tasks.map(task => (
           <TaskItem key={task.id} task={task} />
         ))}
@@ -490,16 +494,16 @@ function TimelineGap({ gapLength, startTime }: { gapLength: number, startTime: s
   };
 
   return (
-    <div className="relative min-h-[5rem] pl-8 pr-4 py-4 border-b-4 border-white/50 border-dashed flex items-center justify-center group bg-brand-bg/20">
-      <div className="absolute -left-[4.5rem] top-1/2 -translate-y-1/2 text-[10px] font-black text-white/50 w-[3.5rem] text-center uppercase tracking-widest">
+    <div className="relative min-h-[4rem] pl-6 pr-2 py-3 border-b border-slate-700/50 border-dashed flex items-center justify-center group bg-slate-900/20">
+      <div className="absolute -left-14 top-1/2 -translate-y-1/2 text-[10px] font-medium text-slate-600 w-10 text-right uppercase tracking-wider">
         {gapLength}H GAP
       </div>
 
       <button
         onClick={handlePlanSlot}
-        className="opacity-0 group-hover:opacity-100 flex items-center gap-2 bg-brand-accent text-brand-bg border-4 border-brand-bg font-black uppercase text-sm px-4 py-2 hover:bg-white transition-all shadow-[4px_4px_0px_0px_#000]"
+        className="opacity-0 group-hover:opacity-100 flex items-center gap-2 bg-slate-800 text-slate-300 border border-slate-700/50 rounded-lg text-xs font-medium px-3 py-1.5 hover:bg-slate-700 hover:text-slate-100 transition-all shadow-sm"
       >
-        <CalendarPlus className="w-5 h-5 stroke-[3]" />
+        <CalendarPlus className="w-3.5 h-3.5" />
         Plan this slot
       </button>
     </div>
