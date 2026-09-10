@@ -1,6 +1,6 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import type { Task, Habit, SleepEntry, ChatMessage, InboxItem } from '../types';
+import type { Task, Habit, SleepEntry, ChatMessage, InboxItem, ThemeConfig } from '../types';
 import { format } from 'date-fns';
 
 export type TabName = 'inbox' | 'today' | 'habits' | 'sleep' | 'chat';
@@ -11,6 +11,7 @@ interface AppState {
   sleepEntries: SleepEntry[];
   chatMessages: ChatMessage[];
   inboxItems: InboxItem[];
+  theme: ThemeConfig;
   pendingChatQuery: string;
   activeTab: TabName;
   selectedDate: string; // yyyy-MM-dd
@@ -37,6 +38,7 @@ type Action =
   | { type: 'SET_PENDING_CHAT_QUERY'; payload: string }
   | { type: 'ADD_INBOX_ITEM'; payload: InboxItem }
   | { type: 'DELETE_INBOX_ITEM'; payload: string }
+  | { type: 'SET_THEME'; payload: ThemeConfig }
   | { type: 'OPEN_TASK_FAB'; payload: { initialTitle?: string; initialTime?: string } }
   | { type: 'CLOSE_TASK_FAB' };
 
@@ -46,6 +48,7 @@ const initialState: AppState = {
   sleepEntries: [],
   chatMessages: [],
   inboxItems: [],
+  theme: { preset: 'editor-dark' },
   pendingChatQuery: '',
   activeTab: 'today',
   selectedDate: format(new Date(), 'yyyy-MM-dd'),
@@ -107,6 +110,8 @@ function appReducer(state: AppState, action: Action): AppState {
       return { ...state, inboxItems: [...state.inboxItems, action.payload] };
     case 'DELETE_INBOX_ITEM':
       return { ...state, inboxItems: state.inboxItems.filter(i => i.id !== action.payload) };
+    case 'SET_THEME':
+      return { ...state, theme: action.payload };
     case 'OPEN_TASK_FAB':
       return {
         ...state,
@@ -142,8 +147,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // ensure inboxItems exists for old state
+        // ensure backwards compatibility
         if (!parsed.inboxItems) parsed.inboxItems = [];
+        if (!parsed.theme) parsed.theme = { preset: 'editor-dark' };
         dispatch({ type: 'SET_STATE', payload: parsed });
       } catch (e) {
         console.error('Failed to parse state from localStorage', e);

@@ -59,12 +59,12 @@ export function ChatView() {
         <h1 className="text-3xl font-bold text-slate-100">Ask AI</h1>
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-6 mb-6 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 shadow-sm">
+      <div className="flex-1 overflow-y-auto space-y-6 mb-6 bg-theme-card/50 backdrop-blur-sm border border-theme-border/50 rounded-2xl p-6 shadow-sm">
 
         {state.chatMessages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4">
-            <div className="bg-slate-800 p-4 rounded-2xl border border-slate-700/50 shadow-sm">
-              <Bot className="w-8 h-8 text-indigo-400" />
+            <div className="bg-theme-card p-4 rounded-2xl border border-theme-border/50 shadow-sm">
+              <Bot className="w-8 h-8 text-theme-accent" />
             </div>
             <p className="text-sm font-medium">How can I optimize your day?</p>
           </div>
@@ -75,15 +75,15 @@ export function ChatView() {
               className={`flex gap-4 max-w-[85%] ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
             >
               <div className={`w-10 h-10 flex items-center justify-center flex-shrink-0 rounded-xl shadow-sm ${
-                msg.sender === 'user' ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-indigo-400 border border-slate-700/50'
+                msg.sender === 'user' ? 'bg-theme-accent text-white' : 'bg-theme-card text-theme-accent border border-theme-border/50'
               }`}>
                 {msg.sender === 'user' ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
               </div>
 
               <div className={`p-4 text-sm font-medium leading-relaxed rounded-2xl shadow-sm ${
                 msg.sender === 'user'
-                  ? 'bg-indigo-500 text-white rounded-tr-sm'
-                  : 'bg-slate-800 border border-slate-700/50 text-slate-200 rounded-tl-sm'
+                  ? 'bg-theme-accent text-white rounded-tr-sm'
+                  : 'bg-theme-card border border-theme-border/50 text-slate-200 rounded-tl-sm'
               }`}>
                 {msg.text}
               </div>
@@ -99,12 +99,12 @@ export function ChatView() {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Type your query here..."
-          className="w-full pl-6 pr-16 py-4 bg-slate-800 border border-slate-700/50 rounded-2xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-shadow shadow-sm"
+          className="w-full pl-6 pr-16 py-4 bg-theme-card border border-theme-border/50 rounded-2xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-theme-accent/50 transition-shadow shadow-sm"
         />
         <button
           type="submit"
           disabled={!inputValue.trim()}
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-indigo-500 text-white rounded-xl disabled:opacity-50 disabled:bg-slate-700 hover:bg-indigo-600 transition-colors shadow-sm"
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-theme-accent text-white rounded-xl disabled:opacity-50 disabled:bg-theme-border hover:bg-theme-accent transition-colors shadow-sm"
         >
           <Send className="w-5 h-5" />
         </button>

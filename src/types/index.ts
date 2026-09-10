@@ -37,3 +37,16 @@ export interface InboxItem {
   text: string;
   createdAt: string;
 }
+
+export type ThemePreset = 'editor-dark' | 'warm-dark' | 'cool-gray' | 'custom';
+
+export interface ThemeConfig {
+  preset: ThemePreset;
+  customColors?: {
+    bg: string;
+    card: string;
+    border: string;
+    accent: string;
+    secondary: string;
+  };
+}
