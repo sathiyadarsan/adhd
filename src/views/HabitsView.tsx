@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { generateId, calculateStreak, getWeeklyProgress } from '../utils/helpers';
 import type { Habit } from '../types';
-import { format, subDays, eachDayOfInterval, isSameDay, startOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { Plus, Flame, Trash2, Calendar as CalendarIcon, X, Target } from 'lucide-react';
+import { format, subDays, eachDayOfInterval, isSameDay, startOfWeek, startOfMonth, endOfMonth, addMonths, subMonths, setYear, getYear } from 'date-fns';
+import { Plus, Flame, Trash2, Calendar as CalendarIcon, X, Target, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export function HabitsView() {
   const { state, dispatch } = useAppContext();
@@ -13,7 +13,7 @@ export function HabitsView() {
   const [weeklyTarget, setWeeklyTarget] = useState(3);
 
   const [timeSpanDays, setTimeSpanDays] = useState(84);
-  const [selectedMonth] = useState(new Date());
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
 
   const handleAddHabit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +42,23 @@ export function HabitsView() {
   const monthEnd = endOfMonth(selectedMonth);
   const calendarStart = startOfWeek(monthStart);
   const calendarDays = eachDayOfInterval({ start: calendarStart, end: monthEnd });
+
+  const handlePrevMonth = () => setSelectedMonth(subMonths(selectedMonth, 1));
+  const handleNextMonth = () => setSelectedMonth(addMonths(selectedMonth, 1));
+
+  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const year = parseInt(e.target.value);
+    setSelectedMonth(setYear(selectedMonth, year));
+  };
+
+  const handleDayClick = (day: Date) => {
+    dispatch({ type: 'SET_SELECTED_DATE', payload: format(day, 'yyyy-MM-dd') });
+    dispatch({ type: 'SET_ACTIVE_TAB', payload: 'today' });
+  };
+
+  // Generate year options (e.g. 5 years back, 5 years forward)
+  const currentYear = getYear(today);
+  const yearOptions = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
 
   return (
     <div className="w-full max-w-6xl mx-auto pb-24">
@@ -110,15 +127,35 @@ export function HabitsView() {
           )}
         </div>
 
-        {/* Right Column: Mini Calendar for Tasks */}
+        {/* Right Column: Interactive Calendar for Tasks */}
         <div>
           <div className="bg-brand-card border-4 border-white shadow-brutal p-6">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
               <h2 className="text-xl bg-white text-brand-bg inline-flex items-center gap-2 px-3 py-1 border-2 border-brand-bg shadow-[2px_2px_0px_0px_#000]">
                 <CalendarIcon className="w-5 h-5 stroke-[3]" />
                 Calendar
               </h2>
-              <span className="text-white font-black uppercase tracking-wider bg-brand-bg border-4 border-white px-3 py-1 shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">{format(selectedMonth, 'MMMM yyyy')}</span>
+
+              <div className="flex items-center gap-2 bg-brand-bg border-4 border-white shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] p-1">
+                <button onClick={handlePrevMonth} className="p-1 text-white hover:bg-white hover:text-brand-bg transition-colors">
+                  <ChevronLeft className="w-5 h-5 stroke-[3]" />
+                </button>
+                <div className="text-white font-black uppercase tracking-wider px-2">
+                  {format(selectedMonth, 'MMM')}
+                </div>
+                <select
+                  value={getYear(selectedMonth)}
+                  onChange={handleYearChange}
+                  className="bg-transparent text-white font-black outline-none cursor-pointer hover:bg-white hover:text-brand-bg transition-colors p-1"
+                >
+                  {yearOptions.map(y => (
+                    <option key={y} value={y} className="bg-brand-bg text-white">{y}</option>
+                  ))}
+                </select>
+                <button onClick={handleNextMonth} className="p-1 text-white hover:bg-white hover:text-brand-bg transition-colors">
+                  <ChevronRight className="w-5 h-5 stroke-[3]" />
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-7 gap-2 bg-brand-bg p-2 border-4 border-white shadow-brutal-sm">
@@ -131,19 +168,21 @@ export function HabitsView() {
                 const hasTask = state.tasks.some(t => t.scheduledDate === dateStr);
                 const isCurrentMonth = day.getMonth() === selectedMonth.getMonth();
                 const isTodayStr = isSameDay(day, today);
+                const isSelectedDateStr = state.selectedDate === dateStr;
 
                 return (
-                  <div
+                  <button
                     key={dateStr}
+                    onClick={() => handleDayClick(day)}
                     className={`aspect-square border-4 flex flex-col items-center justify-center relative transition-colors ${
                       !isCurrentMonth ? 'text-white/30 border-transparent bg-transparent' : 'text-brand-bg bg-white border-white'
-                    } ${isTodayStr ? 'bg-brand-accent border-brand-bg text-brand-bg shadow-[2px_2px_0px_0px_#000] scale-110 z-10' : (isCurrentMonth ? 'hover:bg-brand-secondary hover:text-white' : '')}`}
+                    } ${isSelectedDateStr ? 'bg-brand-secondary border-brand-bg text-white shadow-[2px_2px_0px_0px_#000] scale-110 z-20' : ''} ${isTodayStr && !isSelectedDateStr ? 'bg-brand-accent border-brand-bg text-brand-bg shadow-[2px_2px_0px_0px_#000] scale-110 z-10' : (isCurrentMonth && !isSelectedDateStr ? 'hover:bg-brand-secondary hover:text-white' : '')}`}
                   >
                     <span className="text-lg font-black z-10">{format(day, 'd')}</span>
                     {hasTask && (
-                      <div className={`absolute bottom-1 w-2 h-2 border-2 border-brand-bg ${isTodayStr ? 'bg-white' : 'bg-brand-accent'}`} />
+                      <div className={`absolute bottom-1 w-2 h-2 border-2 border-brand-bg ${isTodayStr || isSelectedDateStr ? 'bg-white' : 'bg-brand-accent'}`} />
                     )}
-                  </div>
+                  </button>
                 );
               })}
             </div>

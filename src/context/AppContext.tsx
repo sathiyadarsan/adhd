@@ -1,6 +1,7 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { Task, Habit, SleepEntry, ChatMessage, InboxItem } from '../types';
+import { format } from 'date-fns';
 
 export type TabName = 'inbox' | 'today' | 'habits' | 'sleep' | 'chat';
 
@@ -12,6 +13,7 @@ interface AppState {
   inboxItems: InboxItem[];
   pendingChatQuery: string;
   activeTab: TabName;
+  selectedDate: string; // yyyy-MM-dd
   fabState: {
     isOpen: boolean;
     initialTitle: string;
@@ -22,6 +24,7 @@ interface AppState {
 type Action =
   | { type: 'SET_STATE'; payload: Partial<AppState> }
   | { type: 'SET_ACTIVE_TAB'; payload: TabName }
+  | { type: 'SET_SELECTED_DATE'; payload: string }
   | { type: 'ADD_TASK'; payload: Task }
   | { type: 'UPDATE_TASK'; payload: Task }
   | { type: 'DELETE_TASK'; payload: string }
@@ -45,6 +48,7 @@ const initialState: AppState = {
   inboxItems: [],
   pendingChatQuery: '',
   activeTab: 'today',
+  selectedDate: format(new Date(), 'yyyy-MM-dd'),
   fabState: {
     isOpen: false,
     initialTitle: '',
@@ -58,6 +62,8 @@ function appReducer(state: AppState, action: Action): AppState {
       return { ...state, ...action.payload };
     case 'SET_ACTIVE_TAB':
       return { ...state, activeTab: action.payload };
+    case 'SET_SELECTED_DATE':
+      return { ...state, selectedDate: action.payload };
     case 'ADD_TASK':
       return { ...state, tasks: [...state.tasks, action.payload] };
     case 'UPDATE_TASK':
@@ -147,8 +153,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Save state on change
   useEffect(() => {
-    // don't save transient state like pending query, active tab, or fab state
-    const { pendingChatQuery, activeTab, fabState, ...stateToSave } = state;
+    // don't save transient state like pending query, active tab, fab state, or selectedDate
+    const { pendingChatQuery, activeTab, fabState, selectedDate, ...stateToSave } = state;
     localStorage.setItem('adhd_app_state', JSON.stringify(stateToSave));
   }, [state]);
 

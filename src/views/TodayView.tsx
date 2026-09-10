@@ -3,7 +3,7 @@ import { generateId } from '../utils/helpers';
 import type { Task } from '../types';
 import { Plus, Check, Clock, Trash2, X, CalendarPlus, Timer, Play, Pause, RotateCcw } from 'lucide-react';
 import { DndContext, useDraggable, useDroppable } from '@dnd-kit/core';
-import { format, startOfToday, setHours } from 'date-fns';
+import { format, setHours, addDays, subDays, isSameDay, parseISO } from 'date-fns';
 import { useEffect, useState, useRef } from 'react';
 
 export function TodayView() {
@@ -29,11 +29,12 @@ export function TodayView() {
     dispatch({ type: 'OPEN_TASK_FAB', payload: {} });
   };
 
-  const todayStr = format(startOfToday(), 'yyyy-MM-dd');
+  const selectedDateObj = parseISO(state.selectedDate);
+  const todayObj = new Date();
 
-  const tasks = state.tasks.filter(t => !t.scheduledDate || t.scheduledDate === todayStr);
-  const unscheduledTasks = tasks.filter(t => !t.scheduledTime);
-  const scheduledTasks = tasks.filter(t => t.scheduledTime);
+  // Tasks for the selected day
+  const dailyTasks = state.tasks.filter(t => !t.scheduledDate || t.scheduledDate === state.selectedDate);
+  const scheduledTasks = dailyTasks.filter(t => t.scheduledTime);
 
   const handleAddTask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +52,7 @@ export function TodayView() {
       completed: false,
       createdAt: new Date().toISOString(),
       category: 'brand-accent',
-      scheduledDate: timeToSave ? todayStr : undefined,
+      scheduledDate: state.selectedDate, // attach to currently selected date
       scheduledTime: timeToSave || undefined,
     };
 
@@ -72,7 +73,7 @@ export function TodayView() {
     if (task) {
       dispatch({
         type: 'UPDATE_TASK',
-        payload: { ...task, scheduledDate: todayStr, scheduledTime: timeSlot }
+        payload: { ...task, scheduledDate: state.selectedDate, scheduledTime: timeSlot }
       });
     }
   };
@@ -123,25 +124,58 @@ export function TodayView() {
     timelineElements.push(<TimeSlot key={currentGapStart} timeId={currentGapStart} label={hourFormatted} tasks={[]} />);
   }
 
+  // Scrollable Day Strip (approx 2 weeks centered around selected date)
+  const stripDays = Array.from({ length: 15 }, (_, i) => subDays(addDays(selectedDateObj, i), 7));
+
   return (
     <DndContext onDragEnd={handleDragEnd}>
       <div className="w-full max-w-6xl mx-auto pb-24">
-        <h1 className="text-4xl text-white mb-8 border-b-4 border-white pb-4 inline-block pr-12">Today</h1>
+
+        {/* Day Strip Header */}
+        <div className="mb-8 overflow-x-auto pb-4 no-scrollbar">
+          <div className="flex gap-4 min-w-max">
+            {stripDays.map(day => {
+              const isSelected = isSameDay(day, selectedDateObj);
+              const isCurrentToday = isSameDay(day, todayObj);
+
+              return (
+                <button
+                  key={day.toISOString()}
+                  onClick={() => dispatch({ type: 'SET_SELECTED_DATE', payload: format(day, 'yyyy-MM-dd') })}
+                  className={`flex flex-col items-center justify-center p-3 border-4 min-w-[5rem] transition-all hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] ${
+                    isSelected
+                      ? 'bg-brand-accent border-brand-bg text-brand-bg shadow-[4px_4px_0px_0px_#000] scale-110 z-10'
+                      : isCurrentToday
+                        ? 'bg-white border-brand-bg text-brand-bg shadow-brutal-sm'
+                        : 'bg-brand-bg border-white text-white shadow-brutal-sm'
+                  }`}
+                >
+                  <span className="text-xs font-black uppercase tracking-widest">{format(day, 'EEE')}</span>
+                  <span className="text-2xl font-black">{format(day, 'd')}</span>
+                  {isCurrentToday && !isSelected && <div className="mt-1 w-2 h-2 bg-brand-accent border border-brand-bg" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
 
-          {/* Left Column: To-Do */}
+          {/* Left Column: To-Do (Now shows ALL tasks for the day) */}
           <div>
             <div className="bg-brand-card border-4 border-white shadow-brutal p-6 h-full">
-              <h2 className="text-xl bg-white text-brand-bg inline-block px-3 py-1 mb-6 border-2 border-brand-bg shadow-[2px_2px_0px_0px_#000]">To-Do</h2>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl bg-white text-brand-bg inline-block px-3 py-1 border-2 border-brand-bg shadow-[2px_2px_0px_0px_#000]">To-Do</h2>
+                <span className="text-white font-black uppercase">{format(selectedDateObj, 'MMM d, yyyy')}</span>
+              </div>
 
               <div className="space-y-4">
-                {unscheduledTasks.map(task => (
-                  <TaskItem key={task.id} task={task} />
+                {dailyTasks.map(task => (
+                  <TaskItem key={task.id} task={task} showTimeLabel={true} />
                 ))}
-                {unscheduledTasks.length === 0 && (
+                {dailyTasks.length === 0 && (
                   <div className="text-center py-12 text-white border-4 border-dashed border-white bg-brand-bg font-bold tracking-widest uppercase">
-                    No tasks left
+                    No tasks for this day
                     <br />
                     <span className="text-xs opacity-70">Slam the + button.</span>
                   </div>
@@ -235,7 +269,7 @@ function parseTime(timeStr: string) {
   return d;
 }
 
-function TaskItem({ task }: { task: Task }) {
+function TaskItem({ task, showTimeLabel = false }: { task: Task, showTimeLabel?: boolean }) {
   const { dispatch } = useAppContext();
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task.id,
@@ -258,6 +292,10 @@ function TaskItem({ task }: { task: Task }) {
   const removeTask = () => {
     dispatch({ type: 'DELETE_TASK', payload: task.id });
   };
+
+  const formattedTime = task.scheduledTime
+    ? format(parseTime(task.scheduledTime), 'h:mm a')
+    : null;
 
   return (
     <div
@@ -284,9 +322,12 @@ function TaskItem({ task }: { task: Task }) {
           {...listeners}
           className="flex-1 cursor-grab active:cursor-grabbing select-none"
         >
-          <p className={`text-white font-bold text-lg leading-tight ${task.completed ? 'line-through opacity-70' : ''}`}>
+          <div className={`text-white font-bold text-lg leading-tight ${task.completed ? 'line-through opacity-70' : ''}`}>
+            {showTimeLabel && formattedTime && (
+              <span className="text-brand-accent font-black mr-2 text-sm uppercase">{formattedTime} &middot;</span>
+            )}
             {task.title}
-          </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -362,7 +403,7 @@ function TaskTimer({ defaultMinutes }: { defaultMinutes: number }) {
   };
 
   const handleInputBlur = () => {
-    if (isRunning) return; // Don't allow changing duration while running
+    if (isRunning) return;
     const parsed = parseInt(minutesInput);
     if (!isNaN(parsed) && parsed > 0) {
       setTimeLeft(parsed * 60);
