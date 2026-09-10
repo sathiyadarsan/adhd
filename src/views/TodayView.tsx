@@ -141,17 +141,17 @@ export function TodayView() {
                 <button
                   key={day.toISOString()}
                   onClick={() => dispatch({ type: 'SET_SELECTED_DATE', payload: format(day, 'yyyy-MM-dd') })}
-                  className={`flex flex-col items-center justify-center p-2 rounded-xl min-w-[4rem] transition-colors border ${
+                  className={`flex flex-col items-center justify-center p-2 rounded-2xl min-w-[4rem] transition-colors transition-transform duration-300 ease-in-out border ${
                     isSelected
-                      ? 'bg-theme-accent border-indigo-400 text-white shadow-md'
+                      ? 'bg-theme-card/70 border-theme-accent/50 text-white shadow-[0_4px_20px_-2px_rgba(0,0,0,0.25)]'
                       : isCurrentToday
-                        ? 'bg-theme-card border-theme-border text-slate-200 hover:bg-theme-border'
-                        : 'bg-theme-card/30 border-transparent text-slate-400 hover:bg-theme-card/80 hover:text-slate-200'
+                        ? 'bg-theme-card/40 border-theme-border/50 text-slate-200 hover:bg-theme-border/50'
+                        : 'bg-theme-card/20 border-transparent text-slate-400 hover:bg-theme-card/60 hover:text-slate-200 hover:border-theme-border/30'
                   }`}
                 >
                   <span className="text-[10px] font-medium uppercase tracking-wider">{format(day, 'EEE')}</span>
-                  <span className="text-lg font-bold">{format(day, 'd')}</span>
-                  {isCurrentToday && !isSelected && <div className="mt-0.5 w-1 h-1 rounded-full bg-indigo-400" />}
+                  <span className="text-lg font-semibold">{format(day, 'd')}</span>
+                  {isCurrentToday && !isSelected && <div className="mt-0.5 w-1 h-1 rounded-full bg-theme-accent" />}
                 </button>
               );
             })}
@@ -162,9 +162,9 @@ export function TodayView() {
 
           {/* Left Column: To-Do */}
           <div>
-            <div className="bg-theme-card/50 backdrop-blur-sm border border-theme-border/50 rounded-2xl p-6 h-full shadow-sm">
+            <div className="bg-theme-card/70 backdrop-blur-md border border-theme-border/50 rounded-2xl p-6 h-full shadow-[0_4px_20px_-2px_rgba(0,0,0,0.25)]">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-semibold text-slate-100">To-Do</h2>
+                <h2 className="text-xl font-semibold text-slate-100">To-Do</h2>
                 <span className="text-sm font-medium text-slate-400">{format(selectedDateObj, 'MMM d, yyyy')}</span>
               </div>
 
@@ -173,7 +173,7 @@ export function TodayView() {
                   <TaskItem key={task.id} task={task} showTimeLabel={true} />
                 ))}
                 {dailyTasks.length === 0 && (
-                  <div className="text-center py-12 text-slate-500 border border-dashed border-theme-border/50 rounded-xl bg-theme-card/30">
+                  <div className="text-center py-12 text-slate-500 border border-dashed border-theme-border/50 rounded-2xl bg-theme-card/30">
                     No tasks for this day
                     <br />
                     <span className="text-sm opacity-70">Tap the + button to add one.</span>
@@ -185,9 +185,9 @@ export function TodayView() {
 
           {/* Right Column: Timeline */}
           <div>
-            <div className="bg-theme-card/30 backdrop-blur-sm border border-theme-border/50 rounded-2xl p-6 h-full pl-2 shadow-sm">
-              <h2 className="text-lg font-semibold text-slate-100 mb-6 flex items-center gap-2 pl-4">
-                <Clock className="w-4 h-4 text-theme-accent" />
+            <div className="bg-theme-card/70 backdrop-blur-md border border-theme-border/50 rounded-2xl p-6 h-full pl-2 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.25)]">
+              <h2 className="text-xl font-semibold text-slate-100 mb-6 flex items-center gap-2 pl-4">
+                <Clock className="w-5 h-5 text-theme-accent" />
                 Timeline
               </h2>
 
@@ -202,14 +202,14 @@ export function TodayView() {
 
       {/* Floating Action Button Overlay */}
       {state.fabState.isOpen && (
-        <div className="fixed inset-0 bg-theme-bg/80 backdrop-blur-sm z-40 flex flex-col justify-end p-4 pb-32 transition-all" onClick={closeFab}>
+        <div className="fixed inset-0 bg-theme-bg/80 backdrop-blur-sm z-40 flex flex-col justify-end p-4 pb-32 transition-colors transition-transform duration-300 ease-in-out" onClick={closeFab}>
           <div
-            className="bg-theme-card border border-theme-border rounded-2xl p-6 w-full max-w-md mx-auto shadow-2xl"
+            className="bg-theme-card/90 backdrop-blur-md border border-theme-border/50 rounded-2xl p-6 w-full max-w-md mx-auto shadow-[0_4px_20px_-2px_rgba(0,0,0,0.25)] transition-colors transition-transform duration-300 ease-in-out"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-slate-100">Add Task</h3>
-              <button onClick={closeFab} className="p-1 text-slate-400 hover:text-slate-200 hover:bg-theme-border rounded-lg transition-colors">
+              <h3 className="text-xl font-semibold text-slate-100">Add Task</h3>
+              <button onClick={closeFab} className="p-1.5 rounded-full text-slate-400 hover:text-slate-200 hover:bg-theme-border/50 transition-colors transition-transform duration-300 ease-in-out">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -223,7 +223,7 @@ export function TodayView() {
                   value={newTaskTitle}
                   onChange={(e) => setNewTaskTitle(e.target.value)}
                   placeholder="e.g., Review PRs..."
-                  className="w-full pl-4 pr-4 py-3 bg-theme-bg border border-theme-border/50 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-theme-accent/50 transition-shadow"
+                  className="w-full pl-4 pr-4 py-3 bg-theme-bg/50 border border-theme-border/50 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-theme-accent/50 focus:ring-1 focus:ring-theme-accent/50 transition-colors transition-transform duration-300 ease-in-out"
                 />
               </div>
 
@@ -233,14 +233,14 @@ export function TodayView() {
                   type="time"
                   value={newTaskTime}
                   onChange={(e) => setNewTaskTime(e.target.value)}
-                  className="w-full px-4 py-3 bg-theme-bg border border-theme-border/50 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-theme-accent/50 transition-shadow [color-scheme:dark]"
+                  className="w-full px-4 py-3 bg-theme-bg/50 border border-theme-border/50 rounded-xl text-slate-200 focus:outline-none focus:border-theme-accent/50 focus:ring-1 focus:ring-theme-accent/50 transition-colors transition-transform duration-300 ease-in-out [color-scheme:dark]"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={!newTaskTitle.trim()}
-                className="w-full bg-theme-accent text-white font-medium rounded-xl px-4 py-3 hover:bg-theme-accent transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+                className="w-full bg-theme-accent text-white font-medium rounded-full px-4 py-3 hover:bg-theme-accent/90 transition-colors transition-transform duration-300 ease-in-out shadow-sm disabled:opacity-50 disabled:cursor-not-allowed mt-2 active:scale-95"
               >
                 Create Task
               </button>
@@ -252,7 +252,7 @@ export function TodayView() {
       {/* FAB Button */}
       <button
         onClick={state.fabState.isOpen ? closeFab : openFab}
-        className={`fixed bottom-20 md:bottom-12 right-6 md:right-12 z-50 w-14 h-14 bg-theme-accent text-white rounded-full shadow-lg flex items-center justify-center hover:bg-theme-accent hover:scale-105 active:scale-95 transition-all ${state.fabState.isOpen ? 'rotate-45' : ''}`}
+        className={`fixed bottom-20 md:bottom-12 right-6 md:right-12 z-50 w-14 h-14 bg-theme-accent text-white rounded-full shadow-[0_4px_20px_-2px_rgba(0,0,0,0.25)] flex items-center justify-center hover:bg-theme-accent/90 hover:scale-105 active:scale-95 transition-colors transition-transform duration-300 ease-in-out ${state.fabState.isOpen ? 'rotate-45' : ''}`}
       >
         <Plus className="w-6 h-6" />
       </button>
@@ -300,23 +300,24 @@ function TaskItem({ task, showTimeLabel = false }: { task: Task, showTimeLabel?:
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex flex-col p-3 rounded-xl border transition-all ${
+      className={`flex flex-col p-3 rounded-2xl border transition-colors transition-transform duration-300 ease-in-out ${
         isDragging
-          ? 'bg-theme-card border-theme-accent/50 shadow-xl scale-[1.02] opacity-90'
-          : 'bg-theme-card/80 border-theme-border/50 hover:border-theme-border shadow-sm'
+          ? 'bg-theme-card/70 backdrop-blur-md border-theme-accent/50 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.25)] scale-[1.02]'
+          : 'bg-theme-card/70 backdrop-blur-md border-theme-border/50 hover:border-theme-accent/40 shadow-sm'
       } ${task.completed ? 'opacity-60 bg-theme-card/40' : ''}`}
     >
       <div className="flex items-center gap-3">
-        <button
-          onClick={toggleComplete}
-          className={`w-6 h-6 flex-shrink-0 rounded flex items-center justify-center transition-colors border ${
-            task.completed
-              ? 'bg-theme-accent border-theme-accent text-white'
-              : 'bg-theme-bg border-theme-border hover:border-theme-accent text-transparent hover:text-theme-accent'
-          }`}
-        >
-          <Check className="w-4 h-4" />
-        </button>
+        <label className="relative flex items-center justify-center cursor-pointer w-6 h-6 shrink-0">
+          <input
+            type="checkbox"
+            checked={task.completed}
+            onChange={toggleComplete}
+            className="peer appearance-none w-0 h-0 opacity-0 absolute"
+          />
+          <div className="w-[22px] h-[22px] rounded-full border border-theme-border/80 flex items-center justify-center transition-colors transition-transform duration-300 ease-in-out peer-checked:bg-theme-secondary peer-checked:border-theme-secondary peer-checked:shadow-[0_0_8px_0_rgba(45,212,191,0.4)] peer-hover:border-theme-accent">
+            <Check className="w-3.5 h-3.5 text-white opacity-0 transition-opacity duration-300 ease-in-out peer-checked:opacity-100" />
+          </div>
+        </label>
 
         <div
           {...attributes}
@@ -331,13 +332,13 @@ function TaskItem({ task, showTimeLabel = false }: { task: Task, showTimeLabel?:
           </div>
         </div>
 
-        <div className="flex items-center gap-1 opacity-60 hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1 opacity-60 hover:opacity-100 transition-opacity duration-300 ease-in-out">
           <button
             onClick={() => setIsTimerOpen(!isTimerOpen)}
-            className={`p-1.5 rounded-lg transition-colors ${
+            className={`p-1.5 rounded-full transition-colors transition-transform duration-300 ease-in-out ${
               isTimerOpen
                 ? 'bg-theme-accent/20 text-theme-accent'
-                : 'text-slate-400 hover:bg-theme-border hover:text-slate-200'
+                : 'text-slate-400 hover:bg-theme-border hover:text-slate-200 active:scale-95'
             }`}
             title="Focus Timer"
           >
@@ -346,7 +347,7 @@ function TaskItem({ task, showTimeLabel = false }: { task: Task, showTimeLabel?:
 
           <button
             onClick={removeTask}
-            className="p-1.5 rounded-lg text-slate-400 hover:bg-theme-border hover:text-red-400 transition-colors"
+            className="p-1.5 rounded-full text-slate-400 hover:bg-theme-border hover:text-red-400 transition-colors transition-transform duration-300 ease-in-out active:scale-95"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -414,8 +415,8 @@ function TaskTimer({ defaultMinutes }: { defaultMinutes: number }) {
   };
 
   return (
-    <div className="flex items-center gap-3 bg-theme-bg/50 rounded-lg p-2 border border-theme-border/50">
-      <div className="flex items-center gap-1.5 bg-theme-card rounded-md px-2 py-1 border border-theme-border/50">
+    <div className="flex items-center gap-3 bg-theme-bg/30 rounded-xl p-2 border border-theme-border/30">
+      <div className="flex items-center gap-1.5 bg-theme-card/50 rounded-lg px-2 py-1 border border-theme-border/30">
         <input
           type="number"
           value={minutesInput}
@@ -436,17 +437,17 @@ function TaskTimer({ defaultMinutes }: { defaultMinutes: number }) {
       <div className="flex items-center gap-1">
         <button
           onClick={toggleTimer}
-          className={`p-1.5 rounded-md transition-colors ${
+          className={`p-1.5 rounded-full transition-colors transition-transform duration-300 ease-in-out active:scale-95 ${
             isRunning
-              ? 'bg-theme-border text-slate-200 hover:bg-slate-600'
-              : 'bg-theme-accent text-white hover:bg-theme-accent'
+              ? 'bg-theme-border text-slate-200 hover:bg-theme-border/80'
+              : 'bg-theme-accent text-white hover:bg-theme-accent/90'
           }`}
         >
           {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
         </button>
         <button
           onClick={resetTimer}
-          className="text-slate-400 p-1.5 hover:bg-theme-card hover:text-slate-200 rounded-md transition-colors"
+          className="text-slate-400 p-1.5 hover:bg-theme-card hover:text-slate-200 rounded-full transition-colors transition-transform duration-300 ease-in-out active:scale-95"
           title="Reset"
         >
           <RotateCcw className="w-4 h-4" />
@@ -495,13 +496,13 @@ function TimelineGap({ gapLength, startTime }: { gapLength: number, startTime: s
 
   return (
     <div className="relative min-h-[4rem] pl-6 pr-2 py-3 border-b border-theme-border/50 border-dashed flex items-center justify-center group bg-theme-bg/20">
-      <div className="absolute -left-14 top-1/2 -translate-y-1/2 text-[10px] font-medium text-slate-600 w-10 text-right uppercase tracking-wider">
+      <div className="absolute -left-14 top-1/2 -translate-y-1/2 text-[10px] font-medium text-slate-500 w-10 text-right uppercase tracking-wider">
         {gapLength}H GAP
       </div>
 
       <button
         onClick={handlePlanSlot}
-        className="opacity-0 group-hover:opacity-100 flex items-center gap-2 bg-theme-card text-slate-300 border border-theme-border/50 rounded-lg text-xs font-medium px-3 py-1.5 hover:bg-theme-border hover:text-slate-100 transition-all shadow-sm"
+        className="opacity-0 group-hover:opacity-100 flex items-center gap-2 bg-theme-card/70 backdrop-blur-md text-slate-300 border border-theme-border/50 rounded-full text-xs font-medium px-4 py-2 hover:bg-theme-border hover:text-slate-100 transition-colors transition-transform duration-300 ease-in-out shadow-[0_4px_20px_-2px_rgba(0,0,0,0.25)] active:scale-95"
       >
         <CalendarPlus className="w-3.5 h-3.5" />
         Plan this slot
