@@ -4,9 +4,9 @@
 
 @layer base {
   :root {
-    --color-bg: 15 23 42; /* slate-900: #0f172a */
-    --color-card: 30 41 59; /* slate-800: #1e293b */
-    --color-border: 51 65 85; /* slate-700: #334155 */
+    --color-bg: 11 19 38; /* stitch background: #0b1326 */
+    --color-card: 19 27 46; /* stitch surface_container_low: #131b2e */
+    --color-border: 70 69 84; /* stitch outline_variant: #464554 */
     --color-accent: 99 102 241; /* indigo-500: #6366f1 */
     --color-secondary: 45 212 191; /* teal-400: #2dd4bf */
   }

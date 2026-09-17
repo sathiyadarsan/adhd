@@ -1,7 +1,7 @@
 import { useAppContext } from '../context/AppContext';
 import { generateId } from '../utils/helpers';
 import type { Task } from '../types';
-import { Plus, Check, Clock, Trash2, X, CalendarPlus, Timer, Play, Pause, RotateCcw } from 'lucide-react';
+import { Plus, Check, Clock, Trash2, X, CalendarPlus, Timer, Play, Pause, RotateCcw, CheckSquare } from 'lucide-react';
 import { DndContext, useDraggable, useDroppable } from '@dnd-kit/core';
 import { format, setHours, addDays, subDays, isSameDay, parseISO } from 'date-fns';
 import { useEffect, useState, useRef } from 'react';
@@ -162,10 +162,26 @@ export function TodayView() {
 
           {/* Left Column: To-Do */}
           <div>
-            <div className="bg-theme-card/70 backdrop-blur-md border border-theme-border/50 rounded-2xl p-6 h-full shadow-[0_4px_20px_-2px_rgba(0,0,0,0.25)]">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-slate-100">To-Do</h2>
+            <div className="bg-theme-card/90 rounded-2xl p-6 h-full shadow-sm backdrop-blur-md border border-theme-border/50">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
+                  <CheckSquare className="w-5 h-5 text-theme-accent" />
+                  To-Do
+                </h2>
                 <span className="text-sm font-medium text-slate-400">{format(selectedDateObj, 'MMM d, yyyy')}</span>
+              </div>
+
+              <div className="mb-6 space-y-2">
+                <div className="flex justify-between text-xs font-medium text-slate-400 uppercase tracking-wider">
+                  <span>{dailyTasks.filter(t => !t.completed).length} remaining</span>
+                  <span>{dailyTasks.filter(t => t.completed).length} completed</span>
+                </div>
+                <div className="w-full bg-theme-bg/50 rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className="bg-theme-secondary h-1.5 rounded-full transition-all duration-500 ease-in-out"
+                    style={{ width: `${dailyTasks.length ? (dailyTasks.filter(t => t.completed).length / dailyTasks.length) * 100 : 0}%` }}
+                  />
+                </div>
               </div>
 
               <div className="space-y-3">
@@ -185,7 +201,7 @@ export function TodayView() {
 
           {/* Right Column: Timeline */}
           <div>
-            <div className="bg-theme-card/70 backdrop-blur-md border border-theme-border/50 rounded-2xl p-6 h-full pl-2 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.25)]">
+            <div className="bg-theme-card/90 rounded-2xl p-6 h-full shadow-sm backdrop-blur-md border border-theme-border/50">
               <h2 className="text-xl font-semibold text-slate-100 mb-6 flex items-center gap-2 pl-4">
                 <Clock className="w-5 h-5 text-theme-accent" />
                 Timeline
@@ -204,7 +220,7 @@ export function TodayView() {
       {state.fabState.isOpen && (
         <div className="fixed inset-0 bg-theme-bg/80 backdrop-blur-sm z-40 flex flex-col justify-end p-4 pb-32 transition-colors transition-transform duration-300 ease-in-out" onClick={closeFab}>
           <div
-            className="bg-theme-card/90 backdrop-blur-md border border-theme-border/50 rounded-2xl p-6 w-full max-w-md mx-auto shadow-[0_4px_20px_-2px_rgba(0,0,0,0.25)] transition-colors transition-transform duration-300 ease-in-out"
+            className="bg-theme-card/95 backdrop-blur-md border border-theme-border/50 rounded-3xl p-6 w-full max-w-lg mx-auto shadow-2xl transition-colors transition-transform duration-300 ease-in-out"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-6">
@@ -302,8 +318,8 @@ function TaskItem({ task, showTimeLabel = false }: { task: Task, showTimeLabel?:
       style={style}
       className={`flex flex-col p-3 rounded-2xl border transition-colors transition-transform duration-300 ease-in-out ${
         isDragging
-          ? 'bg-theme-card/70 backdrop-blur-md border-theme-accent/50 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.25)] scale-[1.02]'
-          : 'bg-theme-card/70 backdrop-blur-md border-theme-border/50 hover:border-theme-accent/40 shadow-sm'
+          ? 'bg-theme-card p-4 rounded-2xl shadow-lg border-l-4 border-l-theme-accent border-y-theme-accent/50 border-r-theme-accent/50 scale-[1.02] cursor-grab active:cursor-grabbing'
+          : 'bg-theme-card/95 p-4 rounded-2xl shadow-sm transition-all hover:bg-theme-card hover:shadow-md border border-theme-border/50 cursor-grab active:cursor-grabbing'
       } ${task.completed ? 'opacity-60 bg-theme-card/40' : ''}`}
     >
       <div className="flex items-center gap-3">

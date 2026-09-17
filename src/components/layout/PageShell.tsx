@@ -130,15 +130,22 @@ export function PageShell() {
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {navItems.map((item) => {
             const isActive = state.activeTab === item.id;
+
+            // Stitch explicit matching for Today nav item active state:
+            // "bg-surface-container-highest text-primary font-bold"
+            // We'll map surface-container-highest to a slightly lighter bg-theme-card tint
+            const isToday = item.id === 'today';
+            const activeClasses = (isActive && isToday)
+              ? 'bg-theme-border/30 text-theme-accent font-bold'
+              : isActive
+                ? 'bg-theme-accent/10 text-theme-accent font-medium'
+                : 'text-slate-400 hover:bg-theme-card hover:text-slate-200 font-medium';
+
             return (
               <button
                 key={item.id}
                 onClick={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: item.id })}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all font-medium ${
-                  isActive
-                    ? 'bg-theme-accent/10 text-theme-accent'
-                    : 'text-slate-400 hover:bg-theme-card hover:text-slate-200'
-                }`}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeClasses}`}
               >
                 <item.icon className={`w-5 h-5 ${isActive ? 'text-theme-accent' : 'text-slate-500'}`} />
                 <span>{item.name}</span>
@@ -294,7 +301,7 @@ function ThemeModal({ onClose }: { onClose: () => void }) {
     {
       id: 'editor-dark',
       name: 'Editor Dark',
-      colors: { bg: '15 23 42', card: '30 41 59', border: '51 65 85', accent: '99 102 241', secondary: '45 212 191' }
+      colors: { bg: '11 19 38', card: '19 27 46', border: '70 69 84', accent: '99 102 241', secondary: '45 212 191' }
     },
     {
       id: 'warm-dark',
