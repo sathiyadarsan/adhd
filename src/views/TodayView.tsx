@@ -162,7 +162,7 @@ export function TodayView() {
 
           {/* Left Column: To-Do */}
           <div>
-            <div className="bg-theme-card/90 rounded-2xl p-6 h-full shadow-sm backdrop-blur-md border border-theme-border/50">
+            <div className="bg-theme-card/90 rounded-2xl p-6 h-full shadow-sm backdrop-blur-md">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
                   <CheckSquare className="w-5 h-5 text-theme-accent" />
@@ -201,7 +201,7 @@ export function TodayView() {
 
           {/* Right Column: Timeline */}
           <div>
-            <div className="bg-theme-card/90 rounded-2xl p-6 h-full shadow-sm backdrop-blur-md border border-theme-border/50">
+            <div className="bg-theme-card/90 rounded-2xl p-6 h-full shadow-sm backdrop-blur-md">
               <h2 className="text-xl font-semibold text-slate-100 mb-6 flex items-center gap-2 pl-4">
                 <Clock className="w-5 h-5 text-theme-accent" />
                 Timeline
@@ -318,8 +318,8 @@ function TaskItem({ task, showTimeLabel = false }: { task: Task, showTimeLabel?:
       style={style}
       className={`flex flex-col p-3 rounded-2xl border transition-colors transition-transform duration-300 ease-in-out ${
         isDragging
-          ? 'bg-theme-card p-4 rounded-2xl shadow-lg border-l-4 border-l-theme-accent border-y-theme-accent/50 border-r-theme-accent/50 scale-[1.02] cursor-grab active:cursor-grabbing'
-          : 'bg-theme-card/95 p-4 rounded-2xl shadow-sm transition-all hover:bg-theme-card hover:shadow-md border border-theme-border/50 cursor-grab active:cursor-grabbing'
+          ? 'bg-theme-card p-4 rounded-2xl shadow-lg border-l-4 border-l-theme-accent scale-[1.02] cursor-grab active:cursor-grabbing'
+          : 'bg-theme-card/95 p-4 rounded-2xl shadow-sm transition-colors transition-transform duration-300 ease-in-out hover:bg-theme-card hover:shadow-md cursor-grab active:cursor-grabbing'
       } ${task.completed ? 'opacity-60 bg-theme-card/40' : ''}`}
     >
       <div className="flex items-center gap-3">
